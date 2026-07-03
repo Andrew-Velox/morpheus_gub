@@ -4,8 +4,10 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import swaggerUi from 'swagger-ui-express';
 
 import apiRouter from './routes/api.js';
+import openapiSpec from './config/swagger.js';
 import { startSimulation } from './simulation/engine.js';
 import { devices } from './data/deviceStore.js';
 import { PORT, ROOMS } from './config/constants.js';
@@ -20,6 +22,10 @@ app.use(express.json());
 
 // Mount all /api/* routes.
 app.use('/api', apiRouter);
+
+// Interactive API docs (Swagger UI) + raw OpenAPI JSON.
+app.use('/docs', swaggerUi.serve, swaggerUi.setup(openapiSpec));
+app.get('/openapi.json', (req, res) => res.json(openapiSpec));
 
 // Health check.
 app.get('/', (req, res) => {
