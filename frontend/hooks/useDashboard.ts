@@ -31,6 +31,12 @@ export function useDashboard() {
   const [isNightMode, setIsNightMode] = useState(false)
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [alerts, setAlerts] = useState<AlertItem[]>([])
+  const [usage, setUsage] = useState<{
+    totalKwh: number
+    estimatedCostBdt: number
+    tariffRate: number
+  }>({ totalKwh: 0, estimatedCostBdt: 0, tariffRate: 12 })
+  const [powerHistory, setPowerHistory] = useState<{ time: string; value: number }[]>([])
 
   const handleDeviceToggle = useCallback(async (id: string) => {
     // Optimistic update
@@ -113,6 +119,35 @@ export function useDashboard() {
         } catch (e) {
           console.error("Error parsing clock for night mode:", e)
         }
+      }
+
+      // Map usage
+      if (snapshot.usage) {
+        setUsage({
+          totalKwh: snapshot.usage.total_usage_kwh ?? 0,
+          estimatedCostBdt: snapshot.usage.estimated_cost_bdt ?? 0,
+          tariffRate: snapshot.usage.tariff_bdt_per_kwh ?? 12,
+        })
+
+        // Track power history
+        const totalPower = snapshot.usage.total_power_watts ?? 0
+        const now = new Date()
+        const bstFormatter = new Intl.DateTimeFormat("en-US", {
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+          hour12: true,
+          timeZone: "Asia/Dhaka",
+        })
+        const timeLabel = bstFormatter.format(now)
+
+        setPowerHistory((prev) => {
+          const updated = [...prev, { time: timeLabel, value: totalPower }]
+          if (updated.length > 30) {
+            return updated.slice(updated.length - 30)
+          }
+          return updated
+        })
       }
     }
 
@@ -210,5 +245,7 @@ export function useDashboard() {
     roomPowers,
     totalPower,
     alerts,
+    usage,
+    powerHistory,
   }
 }

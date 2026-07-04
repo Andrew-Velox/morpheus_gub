@@ -1,24 +1,23 @@
 "use client"
 
 import React from "react"
+import Link from "next/link"
+import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 
-type Tab = "grid" | "floorplan"
-
 interface SidebarProps {
-  activeTab: Tab
-  setActiveTab: (tab: Tab) => void
   collapsed?: boolean
   onToggleCollapse?: () => void
 }
 
 function Sidebar({
-  activeTab,
-  setActiveTab,
   collapsed,
   onToggleCollapse,
 }: SidebarProps) {
+  const pathname = usePathname()
+  const activeTab = pathname === "/floorplan" ? "floorplan" : "grid"
+
   return (
     <aside
       className={cn(
@@ -79,8 +78,8 @@ function Sidebar({
           </span>
         )}
         <nav className="flex flex-col gap-0.5 font-mono">
-          <button
-            onClick={() => setActiveTab("grid")}
+          <Link
+            href="/"
             className={cn(
               "group flex cursor-pointer items-center gap-3 border-l-2 px-3 py-2 text-xs tracking-[0.15em] uppercase transition-all",
               collapsed ? "justify-center px-0" : "",
@@ -102,10 +101,10 @@ function Sidebar({
               <rect x="3" y="14" width="7" height="7" />
             </svg>
             {!collapsed && <span>Status Grid</span>}
-          </button>
+          </Link>
 
-          <button
-            onClick={() => setActiveTab("floorplan")}
+          <Link
+            href="/floorplan"
             className={cn(
               "group flex cursor-pointer items-center gap-3 border-l-2 px-3 py-2 text-xs tracking-[0.15em] uppercase transition-all",
               collapsed ? "justify-center px-0" : "",
@@ -124,7 +123,7 @@ function Sidebar({
               <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
             </svg>
             {!collapsed && <span>3D Floorplan</span>}
-          </button>
+          </Link>
         </nav>
       </div>
 

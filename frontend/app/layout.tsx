@@ -2,6 +2,7 @@ import { Geist_Mono, Space_Grotesk } from "next/font/google"
 
 import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
+import { DashboardProvider } from "@/context/DashboardContext"
 import { cn } from "@/lib/utils"
 
 const spaceGrotesk = Space_Grotesk({
@@ -31,7 +32,11 @@ export default function RootLayout({
       )}
     >
       <body className="h-dvh overflow-hidden">
-        <ThemeProvider>{children}</ThemeProvider>
+        <ThemeProvider>
+          <DashboardProvider>
+            {children}
+          </DashboardProvider>
+        </ThemeProvider>
       </body>
     </html>
   )

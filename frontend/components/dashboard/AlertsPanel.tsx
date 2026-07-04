@@ -3,6 +3,7 @@
 import React from "react"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { Alert02Icon, Clock01Icon } from "@hugeicons/core-free-icons"
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 
 export interface AlertItem {
   id: string
@@ -17,23 +18,25 @@ interface AlertsPanelProps {
 
 function AlertsPanel({ alerts }: AlertsPanelProps) {
   return (
-    <div className="flex h-full flex-col gap-4 border border-border bg-card/20 p-6 font-mono">
-      <div className="flex items-center justify-between border-b border-border/50 pb-3">
+    <Card className="flex h-full flex-col font-mono">
+      <CardHeader className="flex-row items-center justify-between border-b border-border/50 pb-3 p-6">
         <div className="flex items-center gap-2">
           <HugeiconsIcon
             icon={Alert02Icon}
             className="size-4 animate-pulse text-destructive"
           />
-          <span className="text-xs font-bold tracking-wider text-foreground uppercase">
+          <CardTitle className="text-xs font-bold tracking-wider text-foreground uppercase">
             Active Alerts Feed
-          </span>
+          </CardTitle>
         </div>
         <span className="text-[10px] text-muted-foreground uppercase">
           Live Log
         </span>
-      </div>
+      </CardHeader>
 
-      <div className="flex max-h-[300px] flex-col gap-2 overflow-y-auto pr-1">
+      <CardContent className="flex flex-1 min-h-0 flex-col gap-4 p-6">
+
+      <div className="flex flex-1 min-h-[150px] flex-col gap-2 overflow-y-auto pr-1">
         {alerts.length === 0 ? (
           <div className="flex flex-col items-center justify-center border border-dashed border-border/30 bg-background/20 p-4 py-10 text-center">
             <span className="mb-1 text-[10px] font-bold tracking-wider text-success uppercase">
@@ -75,7 +78,8 @@ function AlertsPanel({ alerts }: AlertsPanelProps) {
           ))
         )}
       </div>
-    </div>
+      </CardContent>
+    </Card>
   )
 }
 

@@ -5,15 +5,12 @@ import { Sidebar } from "@/components/dashboard/Sidebar"
 import { PowerMeter } from "@/components/dashboard/PowerMeter"
 import { AlertsPanel } from "@/components/dashboard/AlertsPanel"
 import { DeviceGrid } from "@/components/dashboard/DeviceGrid"
-import { FloorplanViewer } from "@/components/dashboard/FloorplanViewer"
 import { SimulationHud } from "@/components/dashboard/SimulationHud"
-import { useDashboard } from "@/hooks/useDashboard"
+import { useDashboard } from "@/context/DashboardContext"
 
 export default function Page() {
   const {
     devices,
-    activeTab,
-    setActiveTab,
     isNightMode,
     setIsNightMode,
     sidebarCollapsed,
@@ -22,13 +19,13 @@ export default function Page() {
     roomPowers,
     totalPower,
     alerts,
+    usage,
+    powerHistory,
   } = useDashboard()
 
   return (
     <div className="flex h-dvh bg-background text-foreground select-none">
       <Sidebar
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
         collapsed={sidebarCollapsed}
         onToggleCollapse={() => setSidebarCollapsed((c) => !c)}
       />
@@ -39,7 +36,12 @@ export default function Page() {
         <main className="flex min-h-0 flex-1 flex-col gap-6 overflow-y-auto p-6">
           <div className="grid shrink-0 grid-cols-1 gap-6 lg:grid-cols-3">
             <div className="lg:col-span-2">
-              <PowerMeter totalPower={totalPower} roomPowers={roomPowers} />
+              <PowerMeter
+                totalPower={totalPower}
+                roomPowers={roomPowers}
+                usage={usage}
+                powerHistory={powerHistory}
+              />
             </div>
             <div>
               <AlertsPanel alerts={alerts} />
@@ -52,14 +54,10 @@ export default function Page() {
           />
 
           <div className="flex-1">
-            {activeTab === "grid" ? (
-              <DeviceGrid
-                devices={devices}
-                onDeviceToggle={handleDeviceToggle}
-              />
-            ) : (
-              <FloorplanViewer devices={devices} />
-            )}
+            <DeviceGrid
+              devices={devices}
+              onDeviceToggle={handleDeviceToggle}
+            />
           </div>
         </main>
       </div>

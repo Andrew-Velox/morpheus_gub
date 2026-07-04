@@ -3,6 +3,7 @@
 import React from "react"
 import { Switch } from "@/components/ui/switch"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
+import { Card } from "@/components/ui/card"
 
 export interface Device {
   id: string
@@ -19,7 +20,6 @@ interface DeviceGridProps {
 }
 
 function DeviceGrid({ devices, onDeviceToggle }: DeviceGridProps) {
-  // Group devices by room
   const rooms = {
     drawingRoom: {
       name: "Drawing Room",
@@ -39,9 +39,9 @@ function DeviceGrid({ devices, onDeviceToggle }: DeviceGridProps) {
     key: string,
     room: { name: string; devices: Device[] }
   ) => (
-    <div
+    <Card
       key={key}
-      className="flex flex-col gap-4 border border-border bg-card/10 p-6"
+      className="flex flex-col gap-4 p-6"
     >
       {/* Room Header */}
       <div className="flex items-center justify-between border-b border-border/50 pb-2">
@@ -128,7 +128,7 @@ function DeviceGrid({ devices, onDeviceToggle }: DeviceGridProps) {
           )
         })}
       </div>
-    </div>
+    </Card>
   )
 
   return (

@@ -14,10 +14,14 @@ function Header({ activeAlertsCount = 2 }: { activeAlertsCount?: number }) {
     setMounted(true)
     const updateClock = () => {
       const now = new Date()
-      const hrs = String(now.getHours()).padStart(2, "0")
-      const mins = String(now.getMinutes()).padStart(2, "0")
-      const secs = String(now.getSeconds()).padStart(2, "0")
-      setTime(`${hrs}:${mins}:${secs}`)
+      const formatter = new Intl.DateTimeFormat("en-US", {
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: true,
+        timeZone: "Asia/Dhaka"
+      })
+      setTime(formatter.format(now))
     }
     updateClock()
     const interval = setInterval(updateClock, 1000)
@@ -33,7 +37,7 @@ function Header({ activeAlertsCount = 2 }: { activeAlertsCount?: number }) {
           MORPHEUS // ENERGY_COMMAND
         </span>
       </div>
-
+      
       {/* Stats and Info Bar */}
       <div className="flex items-center gap-4">
         {/* Mock Live Connection Status */}
@@ -58,7 +62,7 @@ function Header({ activeAlertsCount = 2 }: { activeAlertsCount?: number }) {
         {/* Live Mock Server Clock */}
         <div className="flex items-center gap-2 border border-border bg-background/50 px-2.5 py-1 text-muted-foreground">
           <span className="text-[10px] font-bold tracking-widest uppercase">
-            UTC_TIME: {time || "00:00:00"}
+            BST_TIME: {time || "00:00:00"}
           </span>
         </div>
 
