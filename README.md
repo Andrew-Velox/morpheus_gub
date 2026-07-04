@@ -1,7 +1,11 @@
 <h1 align="center">morpheus_GUB</h1>
 
 <p align="center">
-  <em>Real-time smart-office energy monitoring for lights, fans, dashboard, Arduino simulation, and Discord.</em>
+  <strong>Real-time smart-office energy monitoring for lights, fans, Arduino simulation, dashboard, and Discord.</strong>
+</p>
+
+<p align="center">
+  <em>Energy waste becomes visible the moment it happens.</em>
 </p>
 
 <p align="center">
@@ -16,17 +20,55 @@
 </p>
 
 <p align="center">
-  <strong>15 devices. 3 rooms. One source of truth.</strong>
+  <a href="#system-diagram">System</a>
+  |
+  <a href="#arduino-circuit-diagram">Arduino Circuit</a>
+  |
+  <a href="#backend">Backend</a>
+  |
+  <a href="#web-dashboard-and-discord-bot-docs">Web and Bot</a>
+  |
+  <a href="#judge-demo-script">Demo</a>
 </p>
 
-Real-time smart-office energy monitoring for the IUT hackathon. morpheus_GUB tracks 15 simulated electrical devices across three rooms, streams live status to a web dashboard, estimates power usage, raises energy-waste alerts, and lets the boss ask the same backend through a Discord bot.
+morpheus_GUB is a hackathon-ready monitoring system for small offices where lights and fans are often left ON after work. It tracks 15 simulated electrical devices across three rooms, streams live status to a web dashboard, estimates power usage, raises energy-waste alerts, and lets the boss ask the same backend through a Discord bot.
 
 The key idea is simple: one backend is the source of truth. The simulator, dashboard, REST API, realtime stream, Arduino-style JSON ingest, and Discord bot all read from the same live device store.
+
+| Judge-facing proof | What morpheus_GUB shows |
+| --- | --- |
+| Real-time dashboard | WebSocket/SSE updates without manual refresh |
+| Shared backend | Dashboard and Discord bot read the same source of truth |
+| Correct device scope | 3 rooms x 3 lights + 2 fans = 15 devices |
+| Power analytics | Live watts, accumulated kWh, room breakdown, estimated BDT cost |
+| Energy-waste alerts | After-hours and continuous-room-usage alerts |
+| Hardware story | Arduino-style circuit docs plus JSON ingest validation |
+
+## Quick Demo Checklist
+
+1. Start the backend and open `/docs`.
+2. Open the dashboard and watch the 15 devices sync live.
+3. Toggle a device from the simulator API.
+4. Set demo time to after hours and show the alert.
+5. Ingest the Arduino JSON fixture and verify `165W`.
+6. Ask Discord `!status`, `!room work1`, and `!usage`.
+
+## Evaluation Coverage
+
+| Hackathon signal | Evidence in this repository |
+| --- | --- |
+| Live dashboard | Next.js dashboard syncs from backend snapshots over WebSocket/SSE |
+| Bot with real data | Discord commands call backend REST APIs instead of hardcoded replies |
+| Dummy simulation | 15-device simulator updates status, watts, kWh, timestamps, and alerts |
+| Circuit credibility | Arduino room circuit and ingest route connect hardware simulation to backend |
+| Architecture clarity | System, data-flow, sequence, ERD, and deployment diagrams are included |
+| Demo control | Simulator APIs can trigger toggles, night mode, alerts, and JSON ingest |
+| Professional delivery | README, Swagger docs, tests, deployment config, and commit history are present |
 
 ## System Diagram
 
 <p align="center">
-  <img src="docs/Smart%20Office%20Monitoring%20System%20Overview.jpeg" alt="Smart Office Monitoring System Overview" width="760" />
+  <img src="docs/Smart%20Office%20Monitoring%20System%20Overview.jpeg" alt="Smart Office Monitoring System Overview" width="700" />
 </p>
 
 The system is built around a monitoring-first flow:
@@ -41,26 +83,18 @@ The system is built around a monitoring-first flow:
 | Arduino-style ingest | Accepts room snapshots from JSON shaped like circuit/sensor output |
 
 <p align="center">
-  <img src="docs/System_Architecture/System_Design_Expalination.jpeg" alt="System Design Explanation" width="720" />
+  <img src="docs/System_Architecture/System_Design_Expalination.jpeg" alt="System Design Explanation" width="680" />
 </p>
 
 Supporting design artifacts:
 
-<p align="center">
-  <img src="docs/Diagrams/Data_Flow_Diagram.jpeg" alt="Data Flow Diagram" width="560" />
-</p>
+| Data Flow | Sequence |
+| --- | --- |
+| <img src="docs/Diagrams/Data_Flow_Diagram.jpeg" alt="Data Flow Diagram" width="390" /> | <img src="docs/Diagrams/Sequence_Diagram.jpeg" alt="Sequence Diagram" width="390" /> |
 
-<p align="center">
-  <img src="docs/Diagrams/Sequence_Diagram.jpeg" alt="Sequence Diagram" width="560" />
-</p>
-
-<p align="center">
-  <img src="docs/Diagrams/Mini_ERD.jpeg" alt="Mini ERD" width="560" />
-</p>
-
-<p align="center">
-  <img src="docs/Diagrams/Deployment_Digram.jpeg" alt="Deployment Diagram" width="560" />
-</p>
+| Mini ERD | Deployment |
+| --- | --- |
+| <img src="docs/Diagrams/Mini_ERD.jpeg" alt="Mini ERD" width="390" /> | <img src="docs/Diagrams/Deployment_Digram.jpeg" alt="Deployment Diagram" width="390" /> |
 
 Source diagram file: [IUT_Hackathon_System_Design.excalidraw](<docs/IUT_Hackathon_System_Design.excalidraw>)
 
@@ -68,13 +102,9 @@ Source diagram file: [IUT_Hackathon_System_Design.excalidraw](<docs/IUT_Hackatho
 
 The circuit design models one representative room: Work Room 1 with 3 lights and 2 fans. The real hackathon backend scales the same pattern across all three rooms.
 
-<p align="center">
-  <img src="docs/Curcite%20Diagram/Circuit_Configuration.png" alt="Circuit Configuration" width="680" />
-</p>
-
-<p align="center">
-  <img src="docs/Curcite%20Diagram/Circuit_configuration-page.png" alt="Circuit Configuration Page" width="680" />
-</p>
+| Circuit configuration | Circuit export page |
+| --- | --- |
+| <img src="docs/Curcite%20Diagram/Circuit_Configuration.png" alt="Circuit Configuration" width="390" /> | <img src="docs/Curcite%20Diagram/Circuit_configuration-page.png" alt="Circuit Configuration Page" width="390" /> |
 
 Circuit PDF: [Circuit_configuration.pdf](<docs/Circuit_configuration.pdf>)
 
@@ -250,7 +280,7 @@ npm run dev
 The Discord bot is documented by the roadmap below and implemented in `backend/bot.js`.
 
 <p align="center">
-  <img src="docs/Discord%20Bot%20Diagram/Chat%20App%20Bot%20Development%20Roadmap.jpeg" alt="Discord Bot Development Roadmap" width="720" />
+  <img src="docs/Discord%20Bot%20Diagram/Chat%20App%20Bot%20Development%20Roadmap.jpeg" alt="Discord Bot Development Roadmap" width="680" />
 </p>
 
 ### Discord Commands
