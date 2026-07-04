@@ -1,13 +1,10 @@
 import { cn } from "@/lib/utils"
 
-function Card({
-  className,
-  ...props
-}: React.HTMLAttributes<HTMLDivElement>) {
+function Card({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
   return (
     <div
       className={cn(
-        "grain border border-midground/15 bg-background-base/80 text-midground w-full",
+        "grain w-full border border-midground/15 bg-background-base/80 text-midground",
         className
       )}
       {...props}
@@ -22,7 +19,7 @@ function CardHeader({
   return (
     <div
       className={cn(
-        "flex flex-col gap-1.5 p-4 border-b border-midground/15",
+        "flex flex-col gap-1.5 border-b border-midground/15 p-4",
         className
       )}
       {...props}
@@ -36,10 +33,7 @@ function CardTitle({
 }: React.HTMLAttributes<HTMLHeadingElement>) {
   return (
     <h3
-      className={cn(
-        "text-sm font-bold tracking-[0.08em] uppercase",
-        className
-      )}
+      className={cn("text-sm font-bold tracking-[0.08em] uppercase", className)}
       {...props}
     />
   )
@@ -49,12 +43,7 @@ function CardDescription({
   className,
   ...props
 }: React.HTMLAttributes<HTMLParagraphElement>) {
-  return (
-    <p
-      className={cn("text-xs text-midground/60", className)}
-      {...props}
-    />
-  )
+  return <p className={cn("text-xs text-midground/60", className)} {...props} />
 }
 
 function CardContent({
@@ -71,7 +60,7 @@ function CardFooter({
   return (
     <div
       className={cn(
-        "flex items-center p-4 border-t border-midground/15",
+        "flex items-center border-t border-midground/15 p-4",
         className
       )}
       {...props}
@@ -79,11 +68,4 @@ function CardFooter({
   )
 }
 
-export {
-  Card,
-  CardHeader,
-  CardFooter,
-  CardTitle,
-  CardDescription,
-  CardContent,
-}
+export { Card, CardHeader, CardFooter, CardTitle, CardDescription, CardContent }

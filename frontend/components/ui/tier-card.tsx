@@ -35,7 +35,7 @@ function TierCard({
       )}
     >
       <div className="p-4">
-        <h3 className="text-xs tracking-[0.2em] uppercase text-midground/60">
+        <h3 className="text-xs tracking-[0.2em] text-midground/60 uppercase">
           {name}
         </h3>
         <p className="mt-2 text-2xl tracking-tight">{price}</p>
