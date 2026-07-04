@@ -2,7 +2,7 @@
 // In-memory database: the single source of truth for all 15 devices.
 // Exposes getters that compute derived state for REST/SSE consumers.
 
-import { ROOMS, ROOM_SLUGS, POWER_RATINGS } from '../config/constants.js';
+import { ROOMS, ROOM_SLUGS, POWER_RATINGS, KWH_FACTOR } from '../config/constants.js';
 
 // Build the initial registry of 15 devices (3 rooms x 2 fans + 3 lights).
 function buildDeviceRegistry() {
@@ -26,14 +26,38 @@ function buildDeviceRegistry() {
 
 // Factory for a single device. Starts OFF (0W).
 function makeDevice(id, type, room) {
+  const now = new Date().toISOString();
   return {
     id,
     type,
     room,
     status: false,
     power_draw: 0,
-    last_changed: new Date().toISOString(),
+    accumulated_kwh: 0,
+    last_changed: now,
+    last_energy_calc: now,
   };
+}
+
+// Update energy consumption for a single device based on elapsed time and power draw.
+export function updateDeviceEnergy(device, now) {
+  const currentCalc = now || new Date();
+  const lastCalc = new Date(device.last_energy_calc);
+  const elapsedMs = currentCalc.getTime() - lastCalc.getTime();
+
+  if (elapsedMs > 0 && device.status) {
+    const power = POWER_RATINGS[device.type] || 0;
+    const consumedKwh = (power * elapsedMs) / KWH_FACTOR;
+    device.accumulated_kwh += consumedKwh;
+  }
+
+  device.last_energy_calc = currentCalc.toISOString();
+}
+
+// Update energy consumption for all devices up to the current timestamp.
+export function updateAllDevicesEnergy() {
+  const now = new Date();
+  devices.forEach((d) => updateDeviceEnergy(d, now));
 }
 
 // `onSince` records when a device last switched to ON (ISO string per id),
@@ -45,8 +69,12 @@ export const devices = buildDeviceRegistry();
 
 // Toggle one device: flip status, fix power_draw + timestamp + onSince.
 export function toggleDevice(device) {
-  device.status = !device.status;
   const now = new Date();
+
+  // Update cumulative energy consumption up to "now" before flipping status
+  updateDeviceEnergy(device, now);
+
+  device.status = !device.status;
 
   if (device.status) {
     device.power_draw = POWER_RATINGS[device.type];
@@ -72,19 +100,47 @@ export function getStatusByRoom() {
 
 // Total + per-room power usage in Watts.
 export function getUsageReport() {
+  updateAllDevicesEnergy();
+
   const perRoom = {};
+  const perRoomKwh = {};
   let totalPower = 0;
-  ROOMS.forEach((r) => (perRoom[r] = 0));
+  let totalKwh = 0;
+
+  ROOMS.forEach((r) => {
+    perRoom[r] = 0;
+    perRoomKwh[r] = 0;
+  });
+
   devices.forEach((d) => {
     perRoom[d.room] += d.power_draw;
     totalPower += d.power_draw;
+    perRoomKwh[d.room] += d.accumulated_kwh;
+    totalKwh += d.accumulated_kwh;
   });
-  return { total_power_watts: totalPower, per_room: perRoom };
+
+  return {
+    total_power_watts: totalPower,
+    total_usage_kwh: parseFloat(totalKwh.toFixed(4)),
+    per_room: perRoom,
+    per_room_kwh: Object.fromEntries(
+      Object.entries(perRoomKwh).map(([room, val]) => [room, parseFloat(val.toFixed(4))])
+    ),
+  };
 }
 
 // A specific room's devices + its total power draw.
 export function getRoomReport(roomName) {
+  updateAllDevicesEnergy();
+
   const roomDevices = devices.filter((d) => d.room === roomName);
   const power = roomDevices.reduce((sum, d) => sum + d.power_draw, 0);
-  return { room: roomName, devices: roomDevices, power_draw_watts: power };
+  const kwh = roomDevices.reduce((sum, d) => sum + d.accumulated_kwh, 0);
+
+  return {
+    room: roomName,
+    devices: roomDevices,
+    power_draw_watts: power,
+    accumulated_kwh: parseFloat(kwh.toFixed(4)),
+  };
 }

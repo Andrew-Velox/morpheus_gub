@@ -85,8 +85,86 @@ async function humanizeResponse(systemContext, rawData) {
 
 // --- Discord events --------------------------------------------------------
 
-client.once('clientReady', () => {
+async function startAlertListener() {
+  const alertChannelId = process.env.DISCORD_ALERT_CHANNEL_ID;
+  if (!alertChannelId) {
+    console.log('🤖 alert channel ID not configured. proactive alerts disabled.');
+    return;
+  }
+
+  console.log(`🤖 proactive alerts active. listening for anomalies to push to channel: ${alertChannelId}`);
+
+  const streamUrl = `${API_BASE}/stream`;
+  let lastAlertKeys = new Set();
+
+  while (true) {
+    try {
+      const res = await fetch(streamUrl);
+      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop(); // Keep partial line in buffer
+
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            try {
+              const snapshot = JSON.parse(line.slice(6));
+              const currentAlerts = snapshot.alerts || [];
+              const currentKeys = new Set();
+
+              for (const alert of currentAlerts) {
+                // Generate a unique key for tracking
+                const key = alert.device_id
+                  ? `${alert.type}:${alert.device_id}`
+                  : `${alert.type}:${alert.room}`;
+
+                currentKeys.add(key);
+
+                // If this is a new alert, alert the channel!
+                if (!lastAlertKeys.has(key)) {
+                  console.log(`🤖 new alert detected: ${alert.message}`);
+                  const formattedMsg = await humanizeResponse(
+                    `Proactive alert warning message for the channel. Alert details: ${alert.message}`,
+                    alert
+                  );
+
+                  try {
+                    const channel = await client.channels.fetch(alertChannelId);
+                    if (channel && typeof channel.send === 'function') {
+                      await channel.send(`⚠️ **ALERT**: ${formattedMsg}`);
+                    }
+                  } catch (sendErr) {
+                    console.error('Failed to send alert to Discord channel:', sendErr.message);
+                  }
+                }
+              }
+
+              lastAlertKeys = currentKeys;
+            } catch (e) {
+              console.error('Failed to parse SSE line:', e);
+            }
+          }
+        }
+      }
+    } catch (err) {
+      console.error('Alert listener SSE connection error, retrying in 5 seconds...', err.message);
+      await new Promise((resolve) => setTimeout(resolve, 5000));
+    }
+  }
+}
+
+client.once('ready', () => {
   console.log(`🤖 bot is online as ${client.user.tag} and ready to test with groq!`);
+  startAlertListener();
 });
 
 client.on('messageCreate', async (message) => {

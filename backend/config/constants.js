@@ -14,6 +14,9 @@ export const POWER_RATINGS = {
   light: 15,
 };
 
+// Conversion factor: Watt-milliseconds to kWh (3.6e9 Watt-ms = 1 kWh)
+export const KWH_FACTOR = 3.6e9;
+
 // Over-usage alert: all devices in a room ON continuously for > 2 hours.
 export const OVER_USAGE_MS = 2 * 60 * 60 * 1000;
 
