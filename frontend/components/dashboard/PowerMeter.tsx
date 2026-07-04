@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useMemo } from "react"
+import React, { useMemo, useState } from "react"
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 
 interface PowerMeterProps {
@@ -19,6 +19,7 @@ interface PowerMeterProps {
 }
 
 function PowerMeter({ totalPower, roomPowers, usage, powerHistory }: PowerMeterProps) {
+  const [hoveredPoint, setHoveredPoint] = useState<any>(null)
   const maxCapacity = 495 // 6 fans * 60W + 9 lights * 15W = 495W
   const percentage = Math.min(100, Math.round((totalPower / maxCapacity) * 100))
 
@@ -45,6 +46,24 @@ function PowerMeter({ totalPower, roomPowers, usage, powerHistory }: PowerMeterP
   }, [chartPoints, linePath])
 
   const lastPoint = chartPoints.length > 0 ? chartPoints[chartPoints.length - 1] : null
+
+  const handleMouseMove = (e: React.MouseEvent<SVGSVGElement>) => {
+    if (chartPoints.length < 2) return
+    const rect = e.currentTarget.getBoundingClientRect()
+    const mouseX = ((e.clientX - rect.left) / rect.width) * 500
+    
+    let closest = chartPoints[0]
+    let minDist = Math.abs(closest.x - mouseX)
+    
+    for (let i = 1; i < chartPoints.length; i++) {
+      const dist = Math.abs(chartPoints[i].x - mouseX)
+      if (dist < minDist) {
+        minDist = dist
+        closest = chartPoints[i]
+      }
+    }
+    setHoveredPoint(closest)
+  }
 
   return (
     <Card className="font-mono">
@@ -192,7 +211,12 @@ function PowerMeter({ totalPower, roomPowers, usage, powerHistory }: PowerMeterP
           </div>
         ) : (
           <div className="relative w-full overflow-hidden border border-border/40 bg-background/20 p-2">
-            <svg viewBox="0 0 500 120" className="w-full overflow-visible">
+            <svg
+              viewBox="0 0 500 120"
+              className="w-full overflow-visible cursor-crosshair"
+              onMouseMove={handleMouseMove}
+              onMouseLeave={() => setHoveredPoint(null)}
+            >
               <defs>
                 <linearGradient id="chart-grad" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="0%" stopColor="var(--primary)" stopOpacity={0.2} />
@@ -216,14 +240,66 @@ function PowerMeter({ totalPower, roomPowers, usage, powerHistory }: PowerMeterP
                 className="text-primary"
               />
               
+              {/* Hover grid guidelines */}
+              {hoveredPoint && (
+                <>
+                  {/* Horizontal hover guide line */}
+                  <line
+                    x1="0"
+                    y1={hoveredPoint.y}
+                    x2="500"
+                    y2={hoveredPoint.y}
+                    stroke="var(--primary)"
+                    strokeWidth="1"
+                    strokeDasharray="2 2"
+                    className="opacity-40"
+                  />
+                  {/* Vertical hover guide line */}
+                  <line
+                    x1={hoveredPoint.x}
+                    y1="0"
+                    x2={hoveredPoint.x}
+                    y2="120"
+                    stroke="var(--primary)"
+                    strokeWidth="1"
+                    strokeDasharray="2 2"
+                    className="opacity-40"
+                  />
+                  {/* Highlight hovered dot */}
+                  <circle
+                    cx={hoveredPoint.x}
+                    cy={hoveredPoint.y}
+                    r="4.5"
+                    fill="currentColor"
+                    className="text-primary shadow-lg"
+                  />
+                </>
+              )}
+
               {/* Glowing current value dot */}
-              {lastPoint && (
+              {lastPoint && !hoveredPoint && (
                 <>
                   <circle cx={lastPoint.x} cy={lastPoint.y} r="4" fill="currentColor" className="text-primary" />
                   <circle cx={lastPoint.x} cy={lastPoint.y} r="8" fill="currentColor" className="animate-ping text-primary/30" />
                 </>
               )}
             </svg>
+
+            {/* Floating hover hint details tooltip */}
+            {hoveredPoint && (
+              <div
+                className="absolute pointer-events-none border border-border/80 bg-background/95 backdrop-blur-md text-foreground px-2.5 py-1.5 text-[9px] font-mono shadow-xl z-50 rounded-sm border-primary/20"
+                style={{
+                  left: `${(hoveredPoint.x / 500) * 100}%`,
+                  top: `${(hoveredPoint.y / 120) * 100}%`,
+                  transform: "translate(-50%, -130%)",
+                }}
+              >
+                <div className="font-bold text-primary tracking-wide">{hoveredPoint.value} W</div>
+                <div className="text-[7px] text-muted-foreground mt-0.5">{hoveredPoint.time}</div>
+              </div>
+            )}
+
             <div className="mt-1 flex justify-between font-mono text-[8px] text-muted-foreground uppercase">
               <span>{powerHistory[0].time}</span>
               <span>{lastPoint?.time}</span>

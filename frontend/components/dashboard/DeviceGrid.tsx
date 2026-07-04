@@ -146,7 +146,7 @@ function DeviceGrid({ devices, onDeviceToggle }: DeviceGridProps) {
   return (
     <div className="flex w-full flex-col gap-4 font-mono">
       <Tabs defaultValue="all" className="w-full">
-        <TabsList className="mb-6 flex flex-wrap gap-x-6 gap-y-2 border-b border-border/40 pb-0">
+        <TabsList className="sticky top-0 z-10 -mx-6 bg-background px-6 pt-4 mb-6 flex flex-wrap gap-x-6 gap-y-2 border-b border-border/40 pb-0">
           <TabsTrigger
             value="all"
             className="flex items-center gap-2 pb-3 text-[10px] font-bold tracking-[0.2em] uppercase transition-all data-active:border-b-2 data-active:border-primary data-active:text-primary hover:text-foreground cursor-pointer"
