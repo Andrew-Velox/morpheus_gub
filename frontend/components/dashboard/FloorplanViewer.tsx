@@ -92,6 +92,12 @@ function FloorplanViewer({ devices, onDeviceToggle }: FloorplanViewerProps) {
   const showAnnotationsRef = useRef(showAnnotations)
   showAnnotationsRef.current = showAnnotations
 
+  const showGridRef = useRef(showGrid)
+  showGridRef.current = showGrid
+
+  const onDeviceToggleRef = useRef(onDeviceToggle)
+  onDeviceToggleRef.current = onDeviceToggle
+
   const drawingRoomRef = useRef<HTMLDivElement>(null)
   const workRoom1Ref = useRef<HTMLDivElement>(null)
   const workRoom2Ref = useRef<HTMLDivElement>(null)
@@ -155,9 +161,9 @@ function FloorplanViewer({ devices, onDeviceToggle }: FloorplanViewerProps) {
   const devicesRef = useRef(devices)
   devicesRef.current = devices
 
-  // Find device by ID
+  // Find device by ID using the latest ref to avoid stale closures
   const findDevice = (id: string) => {
-    return devices.find((d) => d.id === id)
+    return devicesRef.current.find((d) => d.id === id)
   }
 
   // Handle View Mode switching
@@ -355,6 +361,16 @@ function FloorplanViewer({ devices, onDeviceToggle }: FloorplanViewerProps) {
       prevDeviceStatusesRef.current.set(device.id, device.checked)
     })
   }, [devices, onDeviceToggle])
+
+  // Keep hover panel status in sync with real-time updates when devices change
+  useEffect(() => {
+    if (hoveredDevice) {
+      const currentDevice = devices.find((d) => d.id === hoveredDevice.id)
+      if (currentDevice && currentDevice.checked !== hoveredDevice.status) {
+        setHoveredDevice((prev) => prev ? { ...prev, status: currentDevice.checked } : null)
+      }
+    }
+  }, [devices, hoveredDevice])
 
   // Set up Three.js scene (runs once on mount)
   useEffect(() => {
@@ -830,8 +846,8 @@ function FloorplanViewer({ devices, onDeviceToggle }: FloorplanViewerProps) {
         const data = target.userData as HoveredDeviceInfo
 
         if (isClick) {
-          if (onDeviceToggle) {
-            onDeviceToggle(data.id)
+          if (onDeviceToggleRef.current) {
+            onDeviceToggleRef.current(data.id)
           }
         } else {
           const curState = findDevice(data.id)
@@ -919,7 +935,7 @@ function FloorplanViewer({ devices, onDeviceToggle }: FloorplanViewerProps) {
 
       // Grid visibility
       if (themeObjectsRef.current.gridHelper) {
-        themeObjectsRef.current.gridHelper.visible = showGrid
+        themeObjectsRef.current.gridHelper.visible = showGridRef.current
       }
 
       controls.update()
@@ -968,7 +984,7 @@ function FloorplanViewer({ devices, onDeviceToggle }: FloorplanViewerProps) {
       deviceMeshesRef.current.clear()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [showGrid])
+  }, [])
 
   return (
     <div className="relative flex h-full flex-col gap-6 overflow-hidden border border-border bg-card/25 p-6 font-mono rounded-xl">
