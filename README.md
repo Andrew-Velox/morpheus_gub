@@ -1,7 +1,3 @@
-<p align="center">
-  <img src="docs/Smart%20Office%20Monitoring%20System%20Overview.jpeg" alt="morpheus_GUB smart office overview" width="180" />
-</p>
-
 <h1 align="center">morpheus_GUB</h1>
 
 <p align="center">
