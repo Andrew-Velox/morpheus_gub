@@ -1,6 +1,23 @@
 "use client"
 
 import { useState } from "react"
+import { Badge } from "@/components/ui/badge"
+import {
+  Alert,
+  AlertTitle,
+  AlertDescription,
+} from "@/components/ui/alert"
+import {
+  AlertDialog,
+  AlertDialogTrigger,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogAction,
+  AlertDialogCancel,
+} from "@/components/ui/alert-dialog"
 import { Button } from "@/components/ui/button"
 import {
   Card,
@@ -160,6 +177,75 @@ export default function Page() {
               </DialogFooter>
             </DialogContent>
           </Dialog>
+        </div>
+      </section>
+
+      <section className="flex flex-col gap-4">
+        <h2 className="text-display text-sm text-muted-foreground">Badges</h2>
+        <div className="flex flex-wrap items-center gap-3">
+          <Badge>LIVE</Badge>
+          <Badge variant="outline">DEMO</Badge>
+          <Badge variant="success">ACTIVE</Badge>
+          <Badge variant="warning">PENDING</Badge>
+          <Badge variant="destructive">ERROR</Badge>
+        </div>
+      </section>
+
+      <section className="flex flex-col gap-4">
+        <h2 className="text-display text-sm text-muted-foreground">Alerts</h2>
+        <div className="flex w-full max-w-md flex-col gap-3">
+          <Alert>
+            <AlertTitle>Notice</AlertTitle>
+            <AlertDescription>
+              This is a default alert with grain overlay.
+            </AlertDescription>
+          </Alert>
+          <Alert variant="success">
+            <AlertTitle>Success</AlertTitle>
+            <AlertDescription>
+              Operation completed successfully.
+            </AlertDescription>
+          </Alert>
+          <Alert variant="warning">
+            <AlertTitle>Warning</AlertTitle>
+            <AlertDescription>
+              Please review before proceeding.
+            </AlertDescription>
+          </Alert>
+          <Alert variant="destructive">
+            <AlertTitle>Error</AlertTitle>
+            <AlertDescription>
+              Something went wrong. Try again.
+            </AlertDescription>
+          </Alert>
+        </div>
+      </section>
+
+      <section className="flex flex-col gap-4">
+        <h2 className="text-display text-sm text-muted-foreground">Alert Dialog</h2>
+        <div className="flex flex-wrap items-start gap-3">
+          <AlertDialog>
+            <AlertDialogTrigger render={<Button variant="destructive" />}>
+              Delete
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <div className="flex-1 min-w-0 flex flex-col gap-1">
+                  <AlertDialogTitle>Confirm deletion</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This action cannot be undone. Are you sure you want to
+                    proceed?
+                  </AlertDialogDescription>
+                </div>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction variant="destructive">
+                  Delete
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </div>
       </section>
     </div>
