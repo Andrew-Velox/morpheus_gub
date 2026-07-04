@@ -5,7 +5,8 @@
   "scripts": {
     "start:server": "node server.js",
     "start:bot": "node bot.js",
-    "dev": "node dev.mjs"
+    "dev": "node dev.mjs",
+    "test": "node testBackend.js"
   },
   "dependencies": {
     "cors": "^2.8.6",

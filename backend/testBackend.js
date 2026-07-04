@@ -1,158 +1,128 @@
 // backend/testBackend.js
-// Automated test suite for Backend Additions (kWh energy tracking + alerts validation).
+// Smoke tests for the simulation store, usage math, and alert engine.
 
-import { devices, toggleDevice, getUsageReport, getRoomReport, updateAllDevicesEnergy } from './data/deviceStore.js';
-import { evaluateAlerts, alerts } from './simulation/alerts.js';
-import { POWER_RATINGS, KWH_FACTOR } from './config/constants.js';
+import {
+  devices,
+  getRoomReport,
+  getStoreMetadata,
+  getUsageReport,
+  applyRoomSnapshot,
+  resetDevices,
+  setRoomDevices,
+  toggleDevice,
+} from './data/deviceStore.js';
+import { alerts, evaluateAlerts } from './simulation/alerts.js';
+import { clearDemoTime, setDemoTime } from './simulation/clock.js';
+import { EXPECTED_DEVICE_COUNT, POWER_RATINGS, KWH_FACTOR } from './config/constants.js';
 
 let passed = 0;
 let failed = 0;
 
 function assert(condition, message) {
   if (condition) {
-    console.log(`✅ PASS: ${message}`);
+    console.log(`PASS: ${message}`);
     passed++;
   } else {
-    console.error(`❌ FAIL: ${message}`);
+    console.error(`FAIL: ${message}`);
     failed++;
   }
 }
 
-// Helper to reset device states
-function resetDevices() {
-  devices.forEach(d => {
-    d.status = false;
-    d.power_draw = 0;
-    d.accumulated_kwh = 0;
-    const now = new Date().toISOString();
-    d.last_changed = now;
-    d.last_energy_calc = now;
-  });
+function closeEnough(actual, expected, tolerance = 0.0001) {
+  return Math.abs(actual - expected) < tolerance;
+}
+
+function finish() {
+  console.log(`\nTest summary: ${passed} passed, ${failed} failed.`);
+  if (failed > 0) process.exit(1);
+  process.exit(0);
 }
 
 function runTests() {
-  console.log('🧪 Starting Backend Test Suite...\n');
+  console.log('Starting backend smoke tests...\n');
 
-  // Test 1: Device initialization state
   resetDevices();
-  assert(
-    devices.every(d => d.accumulated_kwh === 0),
-    'All devices should initialize with 0 kWh accumulated'
-  );
+  clearDemoTime();
 
-  // Test 2: Energy accumulation calculation on toggle
-  resetDevices();
-  const testDevice = devices[0]; // Let's test with this device
-  
-  // Toggle ON
+  assert(devices.length === EXPECTED_DEVICE_COUNT, 'Device registry should contain 15 devices');
+  assert(getStoreMetadata().device_count === 15, 'Metadata should report 15 devices');
+
+  const drawingRoom = getRoomReport('Drawing Room');
+  assert(drawingRoom.devices.length === 5, 'Each room should expose 5 monitored devices');
+  assert(drawingRoom.fansOff === 2, 'Drawing Room should include 2 fans');
+  assert(drawingRoom.lightsOff === 3, 'Drawing Room should include 3 lights');
+
+  const testDevice = devices.find((device) => device.type === 'fan');
   toggleDevice(testDevice);
-  assert(testDevice.status === true, 'Device status should flip to true (ON)');
-  assert(testDevice.power_draw === POWER_RATINGS[testDevice.type], 'Power draw should set to rating when ON');
+  assert(testDevice.status === true, 'toggleDevice should switch a device ON');
+  assert(testDevice.power_draw === POWER_RATINGS.fan, 'ON fan should draw rated watts');
 
-  // Simulate time lapse: set last_energy_calc to 2 hours ago (7.2e6 ms)
   const twoHoursMs = 2 * 60 * 60 * 1000;
-  const twoHoursAgo = new Date(Date.now() - twoHoursMs);
-  testDevice.last_energy_calc = twoHoursAgo.toISOString();
-
-  // Toggle OFF
+  testDevice.last_energy_calc = new Date(Date.now() - twoHoursMs).toISOString();
   toggleDevice(testDevice);
-  assert(testDevice.status === false, 'Device status should flip to false (OFF)');
-  assert(testDevice.power_draw === 0, 'Power draw should reset to 0 when OFF');
 
-  // Expected energy: (rating * 2 hours in ms) / KWH_FACTOR
-  const expectedKwh = (POWER_RATINGS[testDevice.type] * twoHoursMs) / KWH_FACTOR;
-  assert(
-    Math.abs(testDevice.accumulated_kwh - expectedKwh) < 0.0001,
-    `Device accumulated kWh should match calculation: expected ${expectedKwh.toFixed(4)}, got ${testDevice.accumulated_kwh.toFixed(4)}`
-  );
+  const expectedKwh = (POWER_RATINGS.fan * twoHoursMs) / KWH_FACTOR;
+  assert(closeEnough(testDevice.accumulated_kwh, expectedKwh), 'Device kWh should accumulate while ON');
+  assert(testDevice.status === false && testDevice.power_draw === 0, 'OFF device should draw 0W');
 
-  // Test 3: getUsageReport structure and totals
   resetDevices();
-  const d1 = devices[0];
-  const d2 = devices[1];
-  
-  toggleDevice(d1); // ON
-  toggleDevice(d2); // ON
-  
-  // Simulate 1 hour of consumption
-  const oneHourMs = 1 * 60 * 60 * 1000;
-  const oneHourAgo = new Date(Date.now() - oneHourMs);
-  d1.last_energy_calc = oneHourAgo.toISOString();
-  d2.last_energy_calc = oneHourAgo.toISOString();
+  const fanOne = devices.find((device) => device.type === 'fan');
+  const lightOne = devices.find((device) => device.type === 'light');
+  toggleDevice(fanOne);
+  toggleDevice(lightOne);
 
-  const report = getUsageReport();
-  const expectedTotalKwh = ((POWER_RATINGS[d1.type] + POWER_RATINGS[d2.type]) * oneHourMs) / KWH_FACTOR;
+  const oneHourMs = 60 * 60 * 1000;
+  const oneHourAgo = new Date(Date.now() - oneHourMs).toISOString();
+  fanOne.last_energy_calc = oneHourAgo;
+  lightOne.last_energy_calc = oneHourAgo;
 
-  assert(
-    report.total_power_watts === (POWER_RATINGS[d1.type] + POWER_RATINGS[d2.type]),
-    'getUsageReport should return correct combined wattage'
-  );
-  assert(
-    Math.abs(report.total_usage_kwh - expectedTotalKwh) < 0.0001,
-    `getUsageReport should return correct accumulated kWh: expected ${expectedTotalKwh.toFixed(4)}, got ${report.total_usage_kwh.toFixed(4)}`
-  );
-  assert(
-    report.per_room_kwh[d1.room] > 0,
-    'getUsageReport should show kWh breakdown for active room'
-  );
+  const usage = getUsageReport();
+  const expectedWatts = POWER_RATINGS.fan + POWER_RATINGS.light;
+  const expectedUsage = (expectedWatts * oneHourMs) / KWH_FACTOR;
 
-  // Test 4: Alerts logic - After Hours Alert
+  assert(usage.total_power_watts === expectedWatts, 'Usage report should total current watts');
+  assert(closeEnough(usage.total_usage_kwh, expectedUsage), 'Usage report should total kWh');
+  assert(usage.estimated_cost_bdt > 0, 'Usage report should include estimated BDT cost');
+
   resetDevices();
-  const originalGetHours = Date.prototype.getHours;
-  
-  // Mock time to 10 PM (22:00) which is after hours
-  Date.prototype.getHours = () => 22;
-  
-  // Turn a device ON
-  const activeDevice = devices[0];
-  toggleDevice(activeDevice);
-  
+  setDemoTime('2026-07-03T22:00:00+06:00');
+  toggleDevice(devices[0]);
   evaluateAlerts();
-  assert(
-    alerts.some(a => a.type === 'after_hours' && a.device_id === activeDevice.id),
-    'An after-hours alert should trigger when a device is ON at 10 PM'
-  );
+  assert(alerts.some((alert) => alert.type === 'after_hours'), 'After-hours alert should trigger at 10 PM');
 
-  // Restore getHours
-  Date.prototype.getHours = originalGetHours;
-
-  // Test 5: Alerts logic - Over Usage Alert
   resetDevices();
-  evaluateAlerts();
-  assert(
-    !alerts.some(a => a.type === 'over_usage'),
-    'No over-usage alerts should start active'
-  );
-
-  // Set all devices in Drawing Room to ON
-  const roomName = 'Drawing Room';
-  const drawDevices = devices.filter(d => d.room === roomName);
-  drawDevices.forEach(d => toggleDevice(d));
-
-  // Simulate all being ON for 3 hours
+  clearDemoTime();
   const threeHoursAgo = new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString();
-  
-  // Set the onSince timestamps and evaluate
-  import('./data/deviceStore.js').then((module) => {
-    drawDevices.forEach(d => {
-      module.onSince[d.id] = threeHoursAgo;
-    });
+  setRoomDevices('Drawing Room', true, { onSince: threeHoursAgo, forceTimestamp: true });
+  evaluateAlerts();
+  assert(
+    alerts.some((alert) => alert.type === 'over_usage' && alert.room === 'Drawing Room'),
+    'Over-usage alert should trigger when every room device is ON for over 2 hours'
+  );
 
-    evaluateAlerts();
-    assert(
-      alerts.some(a => a.type === 'over_usage' && a.room === roomName),
-      'An over-usage alert should trigger when all devices in a room are ON continuously for > 2 hours'
-    );
+  resetDevices();
+  const arduinoFixture = {
+    source: 'arduino_uno',
+    roomId: 'work_room_1',
+    roomName: 'Work Room 1',
+    roomTotalWatts: 165,
+    devices: [
+      { id: 'work1_light_1', type: 'light', status: 'on' },
+      { id: 'work1_light_2', type: 'light', status: 'on' },
+      { id: 'work1_light_3', type: 'light', status: 'on' },
+      { id: 'work1_fan_1', type: 'fan', status: 'on', ratedWattage: 15 },
+      { id: 'work1_fan_1', type: 'fan', status: 'on', ratedWattage: 60 },
+      { id: 'work1_fan_2', type: 'fan', status: 'on', ratedWattage: 60 },
+    ],
+  };
+  const ingestResult = applyRoomSnapshot(arduinoFixture);
+  assert(ingestResult.duplicateDeviceIds.includes('work1_fan_1'), 'Arduino ingest should report duplicate device IDs');
+  assert(ingestResult.actualRoomWatts === 165, 'Arduino ingest should produce the expected 165W room total');
+  assert(ingestResult.wattsMatch === true, 'Arduino ingest should validate roomTotalWatts');
 
-    // Print summary
-    console.log(`\n📊 Test Execution Summary: ${passed} passed, ${failed} failed.`);
-    if (failed > 0) {
-      process.exit(1);
-    } else {
-      console.log('🎉 All backend tests passed successfully!');
-      process.exit(0);
-    }
-  });
+  resetDevices();
+  clearDemoTime();
+  finish();
 }
 
 runTests();

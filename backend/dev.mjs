@@ -6,11 +6,19 @@
 // Each process already labels itself (⚡ server / 🤖 bot) so no prefix needed.
 
 import { spawn } from 'node:child_process';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 const specs = [
   { name: 'server', cmd: 'node', args: ['server.js'] },
-  { name: 'bot', cmd: 'node', args: ['bot.js'] },
 ];
+
+if (process.env.DISCORD_TOKEN) {
+  specs.push({ name: 'bot', cmd: 'node', args: ['bot.js'] });
+} else {
+  console.log('[bot] DISCORD_TOKEN missing; starting backend server only.');
+}
 
 const children = [];
 

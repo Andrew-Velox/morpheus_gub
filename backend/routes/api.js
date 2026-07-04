@@ -1,155 +1,222 @@
 // backend/routes/api.js
-// Express router mounting every REST + SSE endpoint.
-//
-// Each route carries an `@openapi` JSDoc block that swagger-jsdoc reads to
-// build the interactive docs UI served at /docs (see config/swagger.js).
+// Express router mounting every REST + realtime endpoint.
 
 import { Router } from 'express';
 import {
-  getStatusByRoom,
-  getUsageReport,
+  applyRoomSnapshot,
+  findDeviceById,
+  getAllDevices,
+  getOfficeSummary,
   getRoomReport,
+  getStatusByRoom,
+  getStoreMetadata,
+  getUsageReport,
+  resetDevices,
+  resolveRoomName,
+  setRoomDevices,
+  toggleDevice,
 } from '../data/deviceStore.js';
-import { alerts } from '../simulation/alerts.js';
-import { buildSnapshot } from '../simulation/engine.js';
-import { attachSSE, broadcast } from '../utils/sse.js';
-import { ROOMS, SLUG_TO_ROOM } from '../config/constants.js';
+import { alerts, evaluateAlerts } from '../simulation/alerts.js';
+import { buildSnapshot, publishSnapshot } from '../simulation/engine.js';
+import { clearDemoTime, getClockState, setDemoTime } from '../simulation/clock.js';
+import { attachSSE } from '../utils/sse.js';
+import { getWebSocketClientCount } from '../utils/websocket.js';
 
 const router = Router();
 
-/**
- * @openapi
- * /api/status:
- *   get:
- *     summary: Get all devices organized by room
- *     description: Returns the current state of every device, grouped by room name.
- *     tags: [Devices]
- *     responses:
- *       200:
- *         description: Devices grouped by room.
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               additionalProperties:
- *                 type: array
- *                 items: { $ref: '#/components/schemas/Device' }
- *             example:
- *               "Drawing Room":
- *                 - id: fan_1_draw
- *                   type: fan
- *                   room: "Drawing Room"
- *                   status: true
- *                   power_draw: 60
- *                   last_changed: "2026-07-03T19:57:56.784Z"
- */
-router.get('/status', (req, res) => {
+function asyncRoute(handler) {
+  return (req, res, next) => Promise.resolve(handler(req, res, next)).catch(next);
+}
+
+function notFound(res, message) {
+  return res.status(404).json({ error: message });
+}
+
+function parseStatusValue(value, fallback = true) {
+  if (value === undefined || value === null) return fallback;
+  if (typeof value === 'boolean') return value;
+
+  const normalized = String(value).trim().toLowerCase();
+  if (['on', 'true', '1', 'yes'].includes(normalized)) return true;
+  if (['off', 'false', '0', 'no'].includes(normalized)) return false;
+
+  const error = new Error('status must be ON/OFF or true/false.');
+  error.statusCode = 400;
+  throw error;
+}
+
+function parseHoursAgo(value) {
+  if (value === undefined || value === null || value === '') return null;
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed) || parsed < 0) {
+    const error = new Error('onSinceHoursAgo must be a non-negative number.');
+    error.statusCode = 400;
+    throw error;
+  }
+  return parsed;
+}
+
+function broadcastFreshSnapshot(event) {
+  evaluateAlerts();
+  return publishSnapshot(event);
+}
+
+router.get('/health', (req, res) => {
+  res.json({
+    status: 'ok',
+    uptime: process.uptime(),
+    timestamp: new Date().toISOString(),
+    realtime: {
+      sse: true,
+      websocket: true,
+      websocketClients: getWebSocketClientCount(),
+    },
+    ...getStoreMetadata(),
+  });
+});
+
+router.get('/devices', (req, res) => {
+  res.json({
+    devices: getAllDevices(),
+    count: getAllDevices().length,
+    generatedAt: new Date().toISOString(),
+  });
+});
+
+router.get('/status/by-room', (req, res) => {
   res.json(getStatusByRoom());
 });
 
-/**
- * @openapi
- * /api/usage:
- *   get:
- *     summary: Get total + per-room power usage
- *     description: Returns the total power currently being drawn (Watts) across the whole office, plus a per-room breakdown.
- *     tags: [Usage]
- *     responses:
- *       200:
- *         description: Power usage report.
- *         content:
- *           application/json:
- *             schema: { $ref: '#/components/schemas/Usage' }
- */
+router.get('/status', (req, res) => {
+  res.json({
+    summary: getOfficeSummary(),
+    rooms: getStatusByRoom(),
+    usage: getUsageReport(),
+    alerts,
+    generatedAt: new Date().toISOString(),
+  });
+});
+
 router.get('/usage', (req, res) => {
   res.json(getUsageReport());
 });
 
-/**
- * @openapi
- * /api/room/{name}:
- *   get:
- *     summary: Get a specific room's status + power draw
- *     description: Accepts a full room name ("Work Room 1") or a short slug ("work1"). Returns the room's devices and total power.
- *     tags: [Rooms]
- *     parameters:
- *       - in: path
- *         name: name
- *         required: true
- *         schema: { type: string }
- *         description: Room name or slug ("draw", "work1", "work2").
- *         example: work1
- *     responses:
- *       200:
- *         description: Room report.
- *         content:
- *           application/json:
- *             schema: { $ref: '#/components/schemas/RoomReport' }
- *       404:
- *         description: Unknown room.
- *         content:
- *           application/json:
- *             schema: { $ref: '#/components/schemas/Error' }
- */
-router.get('/room/:name', (req, res) => {
-  const name = req.params.name;
-  const roomName =
-    SLUG_TO_ROOM[name] || ROOMS.find((r) => r.toLowerCase() === name.toLowerCase());
+function sendRoomReport(req, res) {
+  const roomName = resolveRoomName(req.params.roomId || req.params.name);
+  if (!roomName) {
+    return notFound(res, `Unknown room: ${req.params.roomId || req.params.name}`);
+  }
 
-  if (!roomName) return res.status(404).json({ error: `Unknown room: ${name}` });
+  return res.json(getRoomReport(roomName));
+}
 
-  res.json(getRoomReport(roomName));
-});
+router.get('/rooms/:roomId', sendRoomReport);
+router.get('/room/:name', sendRoomReport);
 
-/**
- * @openapi
- * /api/alerts:
- *   get:
- *     summary: Get currently active anomaly alerts
- *     description: Returns the live alerts array. Alerts are re-evaluated every 10s by the simulation engine.
- *     tags: [Alerts]
- *     responses:
- *       200:
- *         description: Active alerts.
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items: { $ref: '#/components/schemas/Alert' }
- */
 router.get('/alerts', (req, res) => {
-  res.json(alerts);
+  evaluateAlerts();
+  res.json({
+    activeAlerts: alerts,
+    alerts,
+    count: alerts.length,
+    generatedAt: new Date().toISOString(),
+  });
 });
 
-/**
- * @openapi
- * /api/stream:
- *   get:
- *     summary: Server-Sent Events stream of full state snapshots
- *     description: Long-lived SSE connection. Pushes a snapshot immediately on connect, then on every simulation tick (~10s). Content-Type is text/event-stream.
- *     tags: [Realtime]
- *     responses:
- *       200:
- *         description: SSE stream. Each event is a full state snapshot in the `data` field.
- *         content:
- *           text/event-stream:
- *             schema:
- *               type: object
- *               properties:
- *                 rooms: { type: object }
- *                 usage: { $ref: '#/components/schemas/Usage' }
- *                 alerts:
- *                   type: array
- *                   items: { $ref: '#/components/schemas/Alert' }
- *                 timestamp: { type: string, format: date-time }
- */
+router.get('/snapshot', (req, res) => {
+  evaluateAlerts();
+  res.json(buildSnapshot());
+});
+
 router.get('/stream', (req, res) => {
+  evaluateAlerts();
   attachSSE(req, res, buildSnapshot());
 });
 
-// Allow other modules (e.g. the engine) to push updates to SSE clients.
+router.post('/simulator/toggle/:deviceId', (req, res) => {
+  const device = findDeviceById(req.params.deviceId);
+  if (!device) return notFound(res, `Unknown device: ${req.params.deviceId}`);
+
+  toggleDevice(device);
+  const snapshot = broadcastFreshSnapshot('device:update');
+
+  return res.json({
+    deviceId: device.id,
+    newStatus: device.status_label,
+    device,
+    snapshot,
+  });
+});
+
+router.post('/simulator/room/:roomId', (req, res) => {
+  const roomName = resolveRoomName(req.params.roomId);
+  if (!roomName) return notFound(res, `Unknown room: ${req.params.roomId}`);
+
+  const status = parseStatusValue(req.body?.status ?? req.body?.on, true);
+  const onSinceHoursAgo = parseHoursAgo(req.body?.onSinceHoursAgo);
+  const onSince = status && onSinceHoursAgo !== null
+    ? new Date(Date.now() - onSinceHoursAgo * 60 * 60 * 1000).toISOString()
+    : undefined;
+
+  setRoomDevices(roomName, status, { onSince, forceTimestamp: true });
+  const snapshot = broadcastFreshSnapshot('room:update');
+
+  return res.json({
+    room: getRoomReport(roomName),
+    snapshot,
+  });
+});
+
+router.post('/simulator/ingest', (req, res) => {
+  const result = applyRoomSnapshot(req.body);
+  const snapshot = broadcastFreshSnapshot('snapshot:ingest');
+
+  return res.json({
+    result,
+    snapshot,
+  });
+});
+
+router.post('/ingest/arduino', (req, res) => {
+  const result = applyRoomSnapshot(req.body);
+  const snapshot = broadcastFreshSnapshot('snapshot:ingest');
+
+  return res.json({
+    result,
+    snapshot,
+  });
+});
+
+router.post(
+  '/simulator/time',
+  asyncRoute(async (req, res) => {
+    const wantsReset = req.body?.reset === true || req.body?.clear === true;
+    const currentTime = req.body?.currentTime || req.body?.now;
+    const clock = wantsReset ? clearDemoTime() : setDemoTime(currentTime);
+    const snapshot = broadcastFreshSnapshot('clock:update');
+
+    res.json({
+      clock,
+      alerts,
+      snapshot,
+    });
+  })
+);
+
+router.post('/simulator/reset', (req, res) => {
+  resetDevices();
+  if (req.body?.keepClock !== true) clearDemoTime();
+  const snapshot = broadcastFreshSnapshot('simulation:reset');
+
+  res.json({
+    ok: true,
+    clock: getClockState(),
+    snapshot,
+  });
+});
+
 export function broadcastSnapshot() {
-  broadcast(buildSnapshot());
+  return publishSnapshot('snapshot');
 }
 
 export default router;
