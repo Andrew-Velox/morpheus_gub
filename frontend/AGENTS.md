@@ -9,6 +9,14 @@ Before any Next.js work, find and read the relevant doc in `node_modules/next/di
 ## Linting
 * **Use `oxlint` instead of `eslint`** for the lint check. Run `npm run lint` in the frontend directory to run the linter.
 
+## Frontend Design Direction
+* The active visual direction is documented in `frontend/DESIGN.md` and `docs/hermes-web-ui-design-analysis.md`.
+* Preserve the Hermes Agent-inspired dashboard style: dark teal background, cream foreground, thin translucent borders, compact uppercase controls, and monospace technical metadata.
+* Use semantic Tailwind tokens from `app/globals.css`; do not hard-code raw colors when a token exists.
+* Prefer shadcn components from `components/ui/` and compose feature UI around them.
+* Keep layout dense but readable: use `gap-*`, `min-w-0`, `min-h-0`, responsive padding, and mobile-first behavior.
+* Use `.text-display`, `text-muted-foreground`, `text-text-secondary`, `text-text-tertiary`, `surface-glow`, and `grain` consistently when matching the dashboard aesthetic.
+
 ## Engineering Process & Feature Implementation
 * **Prioritize Process Over Speed**: Always prioritize a thorough engineering process.
 * **Clarify Requirements**: Before implementing any major component, ensure requirements are clear. If there are multiple reasonable approaches or missing details, ask concise clarifying questions instead of making assumptions.
