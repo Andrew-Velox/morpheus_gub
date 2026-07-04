@@ -291,6 +291,7 @@ function AlertsPanel({
                             checked={isActive}
                             disabled={!onDeviceToggle}
                             onCheckedChange={() => onDeviceToggle && onDeviceToggle(device.id)}
+                            soundType={device.type}
                           />
                         </div>
                       )

@@ -162,6 +162,7 @@ function DeviceGrid({ devices, onDeviceToggle }: DeviceGridProps) {
               <Switch
                 checked={isActive}
                 onCheckedChange={() => onDeviceToggle(device.id)}
+                soundType={device.type}
               />
             </div>
           )

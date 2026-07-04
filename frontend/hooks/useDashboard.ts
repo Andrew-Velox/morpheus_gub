@@ -158,7 +158,21 @@ export function useDashboard() {
             roomId: alert.roomId || alert.room_id,
           }
         })
-        setAlerts(mappedAlerts)
+        setAlerts((prevAlerts) => {
+          // If we already have alerts and a new one arrives, play the chime
+          const newAlerts = mappedAlerts.filter(
+            (ma) => !prevAlerts.some((pa) => pa.id === ma.id)
+          )
+          if (prevAlerts.length > 0 && newAlerts.length > 0) {
+            if (typeof window !== "undefined") {
+              const audio = new Audio("/sounds/alert-warning.wav")
+              audio.play().catch((err) => {
+                console.warn("Alert sound play blocked:", err)
+              })
+            }
+          }
+          return mappedAlerts
+        })
       }
 
       // Map isNightMode from clock

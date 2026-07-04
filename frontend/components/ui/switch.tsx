@@ -1,5 +1,6 @@
 "use client"
 
+import { useRef } from "react"
 import { cn } from "@/lib/utils"
 
 function Switch({
@@ -8,13 +9,46 @@ function Switch({
   disabled,
   id,
   onCheckedChange,
+  soundType = "ui",
 }: {
   checked: boolean
   className?: string
   disabled?: boolean
   id?: string
   onCheckedChange: (checked: boolean) => void
+  soundType?: "light" | "fan" | "ui"
 }) {
+  const audioRef = useRef<HTMLAudioElement | null>(null)
+
+  const handlePlaySound = () => {
+    if (typeof window !== "undefined") {
+      try {
+        const soundPath = soundType === "fan" 
+          ? "/sounds/fan-toggle.wav" 
+          : "/sounds/light-toggle.wav"
+
+        let speed = checked ? 0.85 : 1.15
+        if (soundType === "fan") {
+          speed = checked ? 0.9 : 1.1
+        }
+
+        if (!audioRef.current) {
+          audioRef.current = new Audio(soundPath)
+        } else if (!audioRef.current.src.endsWith(soundPath)) {
+          audioRef.current.src = soundPath
+        }
+
+        audioRef.current.playbackRate = speed
+        audioRef.current.currentTime = 0
+        audioRef.current.play().catch((err) => {
+          console.warn("Switch sound play blocked:", err)
+        })
+      } catch (err) {
+        console.error("Error playing switch sound:", err)
+      }
+    }
+  }
+
   return (
     <button
       aria-checked={checked}
@@ -29,7 +63,10 @@ function Switch({
       )}
       disabled={disabled}
       id={id}
-      onClick={() => onCheckedChange(!checked)}
+      onClick={() => {
+        handlePlaySound()
+        onCheckedChange(!checked)
+      }}
       role="switch"
       type="button"
     >
