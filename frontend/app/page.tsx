@@ -17,6 +17,7 @@ export default function Page() {
     sidebarCollapsed,
     setSidebarCollapsed,
     handleDeviceToggle,
+    handleRoomShutdown,
     roomPowers,
     totalPower,
     alerts,
@@ -68,7 +69,12 @@ export default function Page() {
               />
             </div>
             <div>
-              <AlertsPanel alerts={alerts} />
+              <AlertsPanel
+                alerts={alerts}
+                devices={devices}
+                onDeviceToggle={handleDeviceToggle}
+                onRoomShutdown={handleRoomShutdown}
+              />
             </div>
           </div>
 

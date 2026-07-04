@@ -70,7 +70,7 @@ function getThemeColors(isDark: boolean) {
     bulbInactiveEmissive: isDark ? 0x1e293b : 0xd1d5db,
     // Spot light
     spotlightColor: isDark ? 0xffbd38 : 0xfbbf24,
-    spotlightIntensity: isDark ? 10 : 6,
+    spotlightIntensity: isDark ? 28 : 16,
     // Glow cone
     glowConeColor: isDark ? 0xffbd38 : 0xfbbf24,
     glowConeOpacity: isDark ? 0.15 : 0.08,
@@ -80,6 +80,10 @@ function getThemeColors(isDark: boolean) {
 function FloorplanViewer({ devices, onDeviceToggle }: FloorplanViewerProps) {
   const { resolvedTheme } = useTheme()
   const isDark = resolvedTheme === "dark"
+  const isDarkRef = useRef(isDark)
+  useEffect(() => {
+    isDarkRef.current = isDark
+  }, [isDark])
 
   const [viewMode, setViewMode] = useState<"top" | "iso">("iso")
   const [showGrid, setShowGrid] = useState(false)
@@ -151,6 +155,7 @@ function FloorplanViewer({ devices, onDeviceToggle }: FloorplanViewerProps) {
     bulbMesh?: THREE.Mesh
     glowMesh?: THREE.Mesh
     lightSource?: THREE.SpotLight
+    pointLightSource?: THREE.PointLight
     fanBladeGroup?: THREE.Group
   }>>(new Map())
 
@@ -248,7 +253,12 @@ function FloorplanViewer({ devices, onDeviceToggle }: FloorplanViewerProps) {
     // Furniture
     refs.furnitureWood.forEach((m) => (m.material as THREE.MeshStandardMaterial).color.setHex(tc.woodColor))
     refs.furnitureFabric.forEach((m) => (m.material as THREE.MeshStandardMaterial).color.setHex(tc.fabricColor))
-    refs.furnitureSteel.forEach((m) => (m.material as THREE.MeshStandardMaterial).color.setHex(tc.steelColor))
+    refs.furnitureSteel.forEach((m) => {
+      const mat = m.material as THREE.MeshStandardMaterial
+      mat.color.setHex(tc.steelColor)
+      mat.metalness = isDark ? 0.25 : 0.8
+      mat.roughness = isDark ? 0.6 : 0.2
+    })
     refs.furniturePlastic.forEach((m) => (m.material as THREE.MeshStandardMaterial).color.setHex(tc.plasticColor))
     refs.furnitureGlass.forEach((m) => {
       const mat = m.material as THREE.MeshPhysicalMaterial
@@ -271,6 +281,13 @@ function FloorplanViewer({ devices, onDeviceToggle }: FloorplanViewerProps) {
     }
 
     // Update device meshes (lights / spotlights / glow cones)
+    const activeLightsCount = devices.filter((d) => d.type === "light" && d.checked).length
+    const baseAmbientIntensity = tc.ambientIntensity
+    const ambientBoost = activeLightsCount * (isDark ? 0.16 : 0.08)
+    if (refs.ambientLight) {
+      refs.ambientLight.intensity = baseAmbientIntensity + ambientBoost
+    }
+
     devices.forEach((device) => {
       const meshes = deviceMeshesRef.current.get(device.id)
       if (!meshes) return
@@ -287,6 +304,11 @@ function FloorplanViewer({ devices, onDeviceToggle }: FloorplanViewerProps) {
           meshes.lightSource.intensity = isActive ? tc.spotlightIntensity : 0
           meshes.lightSource.visible = isActive
         }
+        if (meshes.pointLightSource) {
+          meshes.pointLightSource.color.setHex(tc.spotlightColor)
+          meshes.pointLightSource.intensity = isActive ? tc.spotlightIntensity * 0.15 : 0
+          meshes.pointLightSource.visible = isActive
+        }
         if (meshes.glowMesh) {
           const mat = meshes.glowMesh.material as THREE.MeshBasicMaterial
           mat.color.setHex(tc.glowConeColor)
@@ -300,6 +322,13 @@ function FloorplanViewer({ devices, onDeviceToggle }: FloorplanViewerProps) {
   // Sync device states when `devices` prop changes (without full theme rebuild)
   useEffect(() => {
     const tc = getThemeColors(isDark)
+    const activeLightsCount = devices.filter((d) => d.type === "light" && d.checked).length
+    const baseAmbientIntensity = tc.ambientIntensity
+    const ambientBoost = activeLightsCount * (isDark ? 0.16 : 0.08)
+    if (themeObjectsRef.current.ambientLight) {
+      themeObjectsRef.current.ambientLight.intensity = baseAmbientIntensity + ambientBoost
+    }
+
     devices.forEach((device) => {
       const meshes = deviceMeshesRef.current.get(device.id)
       if (!meshes) return
@@ -314,6 +343,10 @@ function FloorplanViewer({ devices, onDeviceToggle }: FloorplanViewerProps) {
         if (meshes.lightSource) {
           meshes.lightSource.intensity = isActive ? tc.spotlightIntensity : 0
           meshes.lightSource.visible = isActive
+        }
+        if (meshes.pointLightSource) {
+          meshes.pointLightSource.intensity = isActive ? tc.spotlightIntensity * 0.15 : 0
+          meshes.pointLightSource.visible = isActive
         }
         if (meshes.glowMesh) {
           meshes.glowMesh.visible = isActive
@@ -512,7 +545,11 @@ function FloorplanViewer({ devices, onDeviceToggle }: FloorplanViewerProps) {
     // 8. Furniture — each material is shared per category for efficient theme updates
     const woodMat = new THREE.MeshStandardMaterial({ color: tc.woodColor, roughness: 0.4, metalness: 0.1 })
     const fabricMat = new THREE.MeshStandardMaterial({ color: tc.fabricColor, roughness: 0.8 })
-    const steelMat = new THREE.MeshStandardMaterial({ color: tc.steelColor, metalness: 0.9, roughness: 0.2 })
+    const steelMat = new THREE.MeshStandardMaterial({
+      color: tc.steelColor,
+      metalness: isDark ? 0.25 : 0.8,
+      roughness: isDark ? 0.6 : 0.2,
+    })
     const plasticMat = new THREE.MeshStandardMaterial({ color: tc.plasticColor, roughness: 0.6 })
     const glassMat = new THREE.MeshPhysicalMaterial({ color: tc.glassColor, transparent: true, opacity: tc.glassOpacity, transmission: 0.9 })
     const plantMat = new THREE.MeshStandardMaterial({ color: tc.plantColor, roughness: 0.6 })
@@ -733,7 +770,7 @@ function FloorplanViewer({ devices, onDeviceToggle }: FloorplanViewerProps) {
       bulb.castShadow = true
       lightGroup.add(bulb)
 
-      const spotlight = new THREE.SpotLight(tc.spotlightColor, active ? tc.spotlightIntensity : 0, 15, Math.PI / 3, 0.6, 1.2)
+      const spotlight = new THREE.SpotLight(tc.spotlightColor, active ? tc.spotlightIntensity : 0, 15, Math.PI / 3, 0.6, 2.0)
       spotlight.position.set(0, 2.4, 0)
       spotlight.target.position.set(0, 0, 0)
       spotlight.castShadow = true
@@ -743,6 +780,12 @@ function FloorplanViewer({ devices, onDeviceToggle }: FloorplanViewerProps) {
       spotlight.visible = active
       lightGroup.add(spotlight)
       lightGroup.add(spotlight.target)
+
+      // PointLight to illuminate immediate surroundings (ceiling, socket, nearby walls) in 360 degrees
+      const pointLight = new THREE.PointLight(tc.spotlightColor, active ? tc.spotlightIntensity * 0.15 : 0, 8, 2.0)
+      pointLight.position.set(0, 2.4, 0)
+      pointLight.visible = active
+      lightGroup.add(pointLight)
 
       const glowMat = new THREE.MeshBasicMaterial({
         color: tc.glowConeColor,
@@ -768,6 +811,7 @@ function FloorplanViewer({ devices, onDeviceToggle }: FloorplanViewerProps) {
       deviceMeshesRef.current.set(l.id, {
         bulbMesh: bulb,
         lightSource: spotlight,
+        pointLightSource: pointLight,
         glowMesh: glowCone,
       })
     })
@@ -880,6 +924,7 @@ function FloorplanViewer({ devices, onDeviceToggle }: FloorplanViewerProps) {
 
     const tick = () => {
       const delta = clock.getDelta()
+      const elapsed = clock.getElapsedTime()
 
       if (isTransitioningRef.current) {
         camera.position.lerp(targetCameraPos.current, 0.08)
@@ -923,12 +968,31 @@ function FloorplanViewer({ devices, onDeviceToggle }: FloorplanViewerProps) {
         })
       }
 
-      // Spin active fans
+      // Spin active fans & apply physical light flicker/pulsation (approximating dynamic current fluctuations)
+      const pulse = 1.0 + Math.sin(elapsed * 12.0) * 0.03
+      const flicker = Math.random() > 0.985 ? 0.88 : 1.0
+      const lightFactor = pulse * flicker
+
       devicesRef.current.forEach((device) => {
+        const meshes = deviceMeshesRef.current.get(device.id)
+        if (!meshes) return
+
         if (device.type === "fan" && device.checked) {
-          const meshes = deviceMeshesRef.current.get(device.id)
-          if (meshes && meshes.fanBladeGroup) {
+          if (meshes.fanBladeGroup) {
             meshes.fanBladeGroup.rotation.y += delta * 15.0
+          }
+        } else if (device.type === "light" && device.checked) {
+          const baseIntensity = isDarkRef.current ? 28 : 16
+          const baseOpacity = isDarkRef.current ? 0.15 : 0.08
+          if (meshes.lightSource && meshes.lightSource.visible) {
+            meshes.lightSource.intensity = baseIntensity * lightFactor
+          }
+          if (meshes.pointLightSource && meshes.pointLightSource.visible) {
+            meshes.pointLightSource.intensity = (baseIntensity * 0.15) * lightFactor
+          }
+          if (meshes.glowMesh && meshes.glowMesh.visible) {
+            const mat = meshes.glowMesh.material as THREE.MeshBasicMaterial
+            mat.opacity = baseOpacity * lightFactor
           }
         }
       })

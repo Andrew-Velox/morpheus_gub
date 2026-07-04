@@ -58,7 +58,7 @@ export function evaluateAlerts() {
           currentWatts: report.currentWatts,
           message:
             `${room} has ${roomDevicesOn.length} device(s) ON after office hours ` +
-            `(${OFFICE_OPEN}:00-${OFFICE_CLOSE}:00). Current draw: ${report.currentWatts}W.`,
+            `(${OFFICE_OPEN % 12 || 12}:00 ${OFFICE_OPEN >= 12 ? 'PM' : 'AM'} - ${OFFICE_CLOSE % 12 || 12}:00 ${OFFICE_CLOSE >= 12 ? 'PM' : 'AM'}). Current draw: ${report.currentWatts}W.`,
           timestamp: now.toISOString(),
         },
         now

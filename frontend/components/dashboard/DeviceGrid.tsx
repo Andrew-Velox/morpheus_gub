@@ -4,6 +4,8 @@ import React from "react"
 import { Switch } from "@/components/ui/switch"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { Card } from "@/components/ui/card"
+import { cn } from "@/lib/utils"
+import { toast } from "sonner"
 
 export interface Device {
   id: string
@@ -20,6 +22,42 @@ interface DeviceGridProps {
 }
 
 function DeviceGrid({ devices, onDeviceToggle }: DeviceGridProps) {
+  // Keep track of previous device states to trigger toasts when they change
+  const prevDeviceStatusesRef = React.useRef<Map<string, boolean>>(new Map())
+
+  React.useEffect(() => {
+    const formatRoomName = (room: string) => {
+      if (room === "drawingRoom") return "Drawing Room"
+      if (room === "workRoom1") return "Work Room 1"
+      if (room === "workRoom2") return "Work Room 2"
+      return room
+    }
+
+    devices.forEach((device) => {
+      const prevStatus = prevDeviceStatusesRef.current.get(device.id)
+      
+      // If we already had a recorded status and it changed, show a toast
+      if (prevStatus !== undefined && prevStatus !== device.checked) {
+        const roomLabel = formatRoomName(device.room)
+        const title = device.checked ? "Device Activated" : "Device Deactivated"
+        const description = `${device.name} in ${roomLabel} is now ${device.checked ? "ON" : "OFF"}`
+
+        const toastFn = device.checked ? toast.success : toast
+
+        toastFn(title, {
+          description,
+          action: {
+            label: "Undo",
+            onClick: () => onDeviceToggle(device.id),
+          },
+        })
+      }
+      
+      // Update the recorded status
+      prevDeviceStatusesRef.current.set(device.id, device.checked)
+    })
+  }, [devices, onDeviceToggle])
+
   const rooms = {
     drawingRoom: {
       name: "Drawing Room",
@@ -37,7 +75,8 @@ function DeviceGrid({ devices, onDeviceToggle }: DeviceGridProps) {
 
   const renderRoom = (
     key: string,
-    room: { name: string; devices: Device[] }
+    room: { name: string; devices: Device[] },
+    columnsClass: string = "grid-cols-1 sm:grid-cols-2 md:grid-cols-3"
   ) => (
     <Card
       key={key}
@@ -55,7 +94,7 @@ function DeviceGrid({ devices, onDeviceToggle }: DeviceGridProps) {
       </div>
 
       {/* Room Devices Grid */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
+      <div className={cn("grid gap-4", columnsClass)}>
         {room.devices.map((device) => {
           const isActive = device.checked
           return (
@@ -212,8 +251,8 @@ function DeviceGrid({ devices, onDeviceToggle }: DeviceGridProps) {
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="all" className="flex flex-col gap-6">
-          {Object.entries(rooms).map(([key, room]) => renderRoom(key, room))}
+        <TabsContent value="all" className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {Object.entries(rooms).map(([key, room]) => renderRoom(key, room, "grid-cols-1"))}
         </TabsContent>
 
         <TabsContent value="drawingRoom" className="w-full">

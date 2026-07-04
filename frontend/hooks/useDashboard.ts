@@ -8,6 +8,12 @@ export interface AlertItem {
   type: "warning" | "critical"
   message: string
   timestamp: string
+  code?: string
+  room?: string
+  deviceIds?: string[]
+  currentWatts?: number
+  continuous_hours?: number
+  roomId?: string
 }
 
 export interface RoomPowers {
@@ -69,6 +75,29 @@ export function useDashboard() {
     }
   }, [])
 
+  const handleRoomShutdown = useCallback(async (roomId: string) => {
+    const mapSlugToRoom = (slug: string): "drawingRoom" | "workRoom1" | "workRoom2" => {
+      if (slug === "work_room_1") return "workRoom1"
+      if (slug === "work_room_2") return "workRoom2"
+      return "drawingRoom"
+    }
+
+    const roomName = mapSlugToRoom(roomId)
+    setDevices((prev) =>
+      prev.map((d) => (d.room === roomName ? { ...d, checked: false } : d))
+    )
+
+    try {
+      await fetch(`${API_BASE}/api/simulator/room/${roomId}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: false }),
+      })
+    } catch (error) {
+      console.error("Failed to shutdown room:", error)
+    }
+  }, [])
+
   // Sync with backend
   useEffect(() => {
     let ws: WebSocket
@@ -100,11 +129,17 @@ export function useDashboard() {
       // Map alerts
       if (Array.isArray(snapshot.alerts)) {
         const mappedAlerts: AlertItem[] = snapshot.alerts.map((alert: any) => {
-          let timeStr = "00:00:00"
+          let timeStr = "12:00:00 AM"
           try {
             if (alert.timestamp) {
               const d = new Date(alert.timestamp)
-              timeStr = d.toTimeString().split(" ")[0]
+              timeStr = new Intl.DateTimeFormat("en-US", {
+                hour: "2-digit",
+                minute: "2-digit",
+                second: "2-digit",
+                hour12: true,
+                timeZone: "Asia/Dhaka",
+              }).format(d)
             }
           } catch (e) {
             console.error("Error parsing alert timestamp:", e)
@@ -115,6 +150,12 @@ export function useDashboard() {
             type: alert.severity === "critical" ? "critical" : "warning",
             message: alert.message,
             timestamp: timeStr,
+            code: alert.code,
+            room: alert.room,
+            deviceIds: alert.deviceIds || alert.device_ids,
+            currentWatts: alert.currentWatts,
+            continuous_hours: alert.continuous_hours,
+            roomId: alert.roomId || alert.room_id,
           }
         })
         setAlerts(mappedAlerts)
@@ -308,6 +349,7 @@ export function useDashboard() {
     sidebarCollapsed,
     setSidebarCollapsed,
     handleDeviceToggle,
+    handleRoomShutdown,
     roomPowers,
     totalPower,
     alerts,
