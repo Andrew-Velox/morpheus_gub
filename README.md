@@ -1,4 +1,27 @@
-# morpheus_GUB
+<p align="center">
+  <img src="docs/Smart%20Office%20Monitoring%20System%20Overview.jpeg" alt="morpheus_GUB smart office overview" width="180" />
+</p>
+
+<h1 align="center">morpheus_GUB</h1>
+
+<p align="center">
+  <em>Real-time smart-office energy monitoring for lights, fans, dashboard, Arduino simulation, and Discord.</em>
+</p>
+
+<p align="center">
+  <img alt="Hackathon Ready" src="https://img.shields.io/badge/Hackathon-IUT%20Ready-00B894?style=flat-square" />
+  <img alt="Next.js 16" src="https://img.shields.io/badge/Next.js-16-black?style=flat-square&logo=next.js" />
+  <img alt="React 19" src="https://img.shields.io/badge/React-19-61DAFB?style=flat-square&logo=react" />
+  <img alt="Node.js" src="https://img.shields.io/badge/Node.js-Backend-339933?style=flat-square&logo=node.js&logoColor=white" />
+  <img alt="Express 5" src="https://img.shields.io/badge/Express-5.2-000000?style=flat-square&logo=express" />
+  <img alt="Discord.js 14" src="https://img.shields.io/badge/Discord.js-14-5865F2?style=flat-square&logo=discord&logoColor=white" />
+  <img alt="Realtime" src="https://img.shields.io/badge/Realtime-SSE%20%2B%20WebSocket-FFB000?style=flat-square" />
+  <img alt="Arduino JSON" src="https://img.shields.io/badge/Arduino-JSON%20Ingest-00979D?style=flat-square&logo=arduino&logoColor=white" />
+</p>
+
+<p align="center">
+  <strong>15 devices. 3 rooms. One source of truth.</strong>
+</p>
 
 Real-time smart-office energy monitoring for the IUT hackathon. morpheus_GUB tracks 15 simulated electrical devices across three rooms, streams live status to a web dashboard, estimates power usage, raises energy-waste alerts, and lets the boss ask the same backend through a Discord bot.
 
@@ -6,7 +29,9 @@ The key idea is simple: one backend is the source of truth. The simulator, dashb
 
 ## System Diagram
 
-![Smart Office Monitoring System Overview](<docs/Smart Office Monitoring System Overview.jpeg>)
+<p align="center">
+  <img src="docs/Smart%20Office%20Monitoring%20System%20Overview.jpeg" alt="Smart Office Monitoring System Overview" width="760" />
+</p>
 
 The system is built around a monitoring-first flow:
 
@@ -19,17 +44,27 @@ The system is built around a monitoring-first flow:
 | Discord bot | Answers `!status`, `!room`, and `!usage` from real backend data |
 | Arduino-style ingest | Accepts room snapshots from JSON shaped like circuit/sensor output |
 
-![System Design Explanation](<docs/System_Architecture/System_Design_Expalination.jpeg>)
+<p align="center">
+  <img src="docs/System_Architecture/System_Design_Expalination.jpeg" alt="System Design Explanation" width="720" />
+</p>
 
 Supporting design artifacts:
 
-![Data Flow Diagram](<docs/Diagrams/Data_Flow_Diagram.jpeg>)
+<p align="center">
+  <img src="docs/Diagrams/Data_Flow_Diagram.jpeg" alt="Data Flow Diagram" width="560" />
+</p>
 
-![Sequence Diagram](<docs/Diagrams/Sequence_Diagram.jpeg>)
+<p align="center">
+  <img src="docs/Diagrams/Sequence_Diagram.jpeg" alt="Sequence Diagram" width="560" />
+</p>
 
-![Mini ERD](<docs/Diagrams/Mini_ERD.jpeg>)
+<p align="center">
+  <img src="docs/Diagrams/Mini_ERD.jpeg" alt="Mini ERD" width="560" />
+</p>
 
-![Deployment Diagram](<docs/Diagrams/Deployment_Digram.jpeg>)
+<p align="center">
+  <img src="docs/Diagrams/Deployment_Digram.jpeg" alt="Deployment Diagram" width="560" />
+</p>
 
 Source diagram file: [IUT_Hackathon_System_Design.excalidraw](<docs/IUT_Hackathon_System_Design.excalidraw>)
 
@@ -37,9 +72,13 @@ Source diagram file: [IUT_Hackathon_System_Design.excalidraw](<docs/IUT_Hackatho
 
 The circuit design models one representative room: Work Room 1 with 3 lights and 2 fans. The real hackathon backend scales the same pattern across all three rooms.
 
-![Circuit Configuration](<docs/Curcite Diagram/Circuit_Configuration.png>)
+<p align="center">
+  <img src="docs/Curcite%20Diagram/Circuit_Configuration.png" alt="Circuit Configuration" width="680" />
+</p>
 
-![Circuit Configuration Page](<docs/Curcite Diagram/Circuit_configuration-page.png>)
+<p align="center">
+  <img src="docs/Curcite%20Diagram/Circuit_configuration-page.png" alt="Circuit Configuration Page" width="680" />
+</p>
 
 Circuit PDF: [Circuit_configuration.pdf](<docs/Circuit_configuration.pdf>)
 
@@ -214,7 +253,9 @@ npm run dev
 
 The Discord bot is documented by the roadmap below and implemented in `backend/bot.js`.
 
-![Discord Bot Development Roadmap](<docs/Discord Bot Diagram/Chat App Bot Development Roadmap.jpeg>)
+<p align="center">
+  <img src="docs/Discord%20Bot%20Diagram/Chat%20App%20Bot%20Development%20Roadmap.jpeg" alt="Discord Bot Development Roadmap" width="720" />
+</p>
 
 ### Discord Commands
 
