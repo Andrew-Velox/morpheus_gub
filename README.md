@@ -15,11 +15,32 @@
   <img alt="Node.js" src="https://img.shields.io/badge/Node.js-Backend-339933?style=flat-square&logo=node.js&logoColor=white" />
   <img alt="Express 5" src="https://img.shields.io/badge/Express-5.2-000000?style=flat-square&logo=express" />
   <img alt="Discord.js 14" src="https://img.shields.io/badge/Discord.js-14-5865F2?style=flat-square&logo=discord&logoColor=white" />
+  <img alt="Three.js" src="https://img.shields.io/badge/Three.js-Floorplan-000000?style=flat-square&logo=threedotjs" />
   <img alt="Realtime" src="https://img.shields.io/badge/Realtime-SSE%20%2B%20WebSocket-FFB000?style=flat-square" />
   <img alt="Arduino JSON" src="https://img.shields.io/badge/Arduino-JSON%20Ingest-00979D?style=flat-square&logo=arduino&logoColor=white" />
 </p>
 
 <p align="center">
+  <strong>Live Project:</strong>
+  <a href="https://morpheus-gub-hkfs.vercel.app/">https://morpheus-gub-hkfs.vercel.app/</a>
+</p>
+
+## Table of Contents
+
+- [Live Project](#live-project)
+- [Why morpheus_GUB Wins](#why-morpheus_gub-wins)
+- [Quick Demo Checklist](#quick-demo-checklist)
+- [Evaluation Coverage](#evaluation-coverage)
+- [System Diagram](#system-diagram)
+- [Arduino Circuit Diagram](#arduino-circuit-diagram)
+- [Backend](#backend)
+- [Web Dashboard and Discord Bot Docs](#web-dashboard-and-discord-bot-docs)
+- [Judge Demo Script](#judge-demo-script)
+- [Documentation Index](#documentation-index)
+
+<p align="center">
+  <a href="#live-project">Live</a>
+  |
   <a href="#system-diagram">System</a>
   |
   <a href="#arduino-circuit-diagram">Arduino Circuit</a>
@@ -34,6 +55,27 @@
 morpheus_GUB is a hackathon-ready monitoring system for small offices where lights and fans are often left ON after work. It tracks 15 simulated electrical devices across three rooms, streams live status to a web dashboard, estimates power usage, raises energy-waste alerts, and lets the boss ask the same backend through a Discord bot.
 
 The key idea is simple: one backend is the source of truth. The simulator, dashboard, REST API, realtime stream, Arduino-style JSON ingest, and Discord bot all read from the same live device store.
+
+## Live Project
+
+| Link | Purpose |
+| --- | --- |
+| [Live dashboard](https://morpheus-gub-hkfs.vercel.app/) | Judge-facing deployed web app |
+| `https://morpheus-gub.onrender.com` | Default backend used by the frontend when `NEXT_PUBLIC_API_BASE` is not overridden |
+| `/docs` on the backend | Swagger API documentation for local/backend demos |
+
+## Why morpheus_GUB Wins
+
+This project is built for the exact judging moment: a live dashboard, a real backend, a hardware story, and a Discord bot that agrees with the dashboard.
+
+| Winning angle | Why it matters |
+| --- | --- |
+| Monitoring-first scope | Solves forgotten lights/fans without pretending to be a remote-control product |
+| One source of truth | Dashboard, Discord bot, simulator, and Arduino ingest all share one backend store |
+| Fast demo control | Simulator routes can trigger toggles, night mode, room alerts, resets, and Arduino JSON ingest |
+| Judge-verifiable math | Work Room 1 fixture validates `3 lights x 15W + 2 fans x 60W = 165W` |
+| Real frontend polish | Operational dashboard, mobile sidebar, diagnostics, charts, alerts, and 3D floorplan view |
+| Scalable story | Starts in-memory for hackathon speed, but the architecture cleanly separates devices, usage, alerts, dashboard, and bot |
 
 | Judge-facing proof | What morpheus_GUB shows |
 | --- | --- |
@@ -180,26 +222,7 @@ Device state includes:
 - Demo controls for toggling devices, forcing room state, setting demo time, and resetting simulation
 - Arduino-style ingest for circuit/sensor JSON
 
-### Backend API
-
-| Method | Endpoint | Purpose |
-| --- | --- | --- |
-| `GET` | `/api/health` | Backend health, metadata, realtime availability |
-| `GET` | `/api/devices` | Flat list of all 15 devices |
-| `GET` | `/api/status` | Office summary, grouped rooms, usage, alerts |
-| `GET` | `/api/status/by-room` | Devices grouped by room |
-| `GET` | `/api/rooms/:roomId` | One room report |
-| `GET` | `/api/room/:name` | Backward-compatible room route |
-| `GET` | `/api/usage` | Current watts, kWh, room breakdown, estimated cost |
-| `GET` | `/api/alerts` | Active alerts |
-| `GET` | `/api/snapshot` | Full backend state snapshot |
-| `GET` | `/api/stream` | SSE realtime stream |
-| `POST` | `/api/simulator/toggle/:deviceId` | Toggle one simulated device |
-| `POST` | `/api/simulator/room/:roomId` | Force a full room ON/OFF |
-| `POST` | `/api/simulator/ingest` | Ingest Arduino-style JSON |
-| `POST` | `/api/ingest/arduino` | Alias for Arduino-style JSON ingest |
-| `POST` | `/api/simulator/time` | Set demo clock for alert demos |
-| `POST` | `/api/simulator/reset` | Reset simulation state |
+Swagger documents the full backend surface at `/docs`; the demo flow below uses only the routes needed to prove realtime sync, alert generation, and Arduino-style ingest.
 
 ### Run Backend
 
@@ -258,7 +281,7 @@ The smoke suite verifies:
 
 ## Web Dashboard and Discord Bot Docs
 
-The dashboard is a compact operational interface inspired by the Hermes design notes in [hermes-web-ui-design-analysis.md](<docs/System_Architecture/hermes-web-ui-design-analysis.md>). It uses a dark teal/cream monitoring aesthetic, dense room cards, power charts, active alert panels, and realtime backend synchronization.
+The dashboard uses a compact dark operational interface with dense room cards, power charts, active alert panels, realtime diagnostics, responsive mobile navigation, and backend synchronization.
 
 Dashboard stack:
 
@@ -266,7 +289,9 @@ Dashboard stack:
 | --- | --- |
 | Framework | Next.js |
 | Styling | Tailwind, shadcn-style components, Base UI, Hugeicons |
+| 3D floorplan | Three.js with interactive lights/fans, orbit controls, grid, labels, and theme-aware materials |
 | Realtime data | WebSocket/SSE plus REST resync |
+| Diagnostics | `/api/health` polling for API gateway state, in-memory database state, and latency |
 | Deployment config | `vercel.json` with frontend/backend services |
 
 Run dashboard locally:
@@ -340,15 +365,6 @@ curl -X POST http://localhost:4000/api/simulator/ingest \
 !usage
 ```
 
-## Why This Project Wins
-
-- It solves the actual problem: monitoring energy waste, not unnecessary remote control.
-- Dashboard and bot share one backend, so judges can compare them live.
-- Realtime updates prove the system works without manual refresh.
-- The circuit model, backend ingest route, and JSON fixture connect the Arduino story to the software system.
-- Alerts are practical: after-hours waste and rooms left fully active too long.
-- The README includes architecture, circuit, backend, dashboard, bot, tests, and demo commands in one judge-friendly path.
-
 ## Documentation Index
 
 | Asset | Purpose |
@@ -363,5 +379,4 @@ curl -X POST http://localhost:4000/api/simulator/ingest \
 | [Circuit Configuration PNG](<docs/Curcite Diagram/Circuit_Configuration.png>) | Arduino circuit visual |
 | [Circuit Configuration Page PNG](<docs/Curcite Diagram/Circuit_configuration-page.png>) | Circuit export page |
 | [Circuit Configuration PDF](<docs/Circuit_configuration.pdf>) | Circuit document |
-| [Hermes UI Design Analysis](<docs/System_Architecture/hermes-web-ui-design-analysis.md>) | Dashboard visual design notes |
 | [Discord Bot Roadmap](<docs/Discord Bot Diagram/Chat App Bot Development Roadmap.jpeg>) | Bot workflow and development roadmap |
