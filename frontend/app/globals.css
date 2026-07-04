@@ -55,7 +55,7 @@
 }
 
 :root {
-    --background-base: #ffe6cb;
+    --background-base: #ffffff;
     --midground: #041c1c;
     --warm-glow: rgba(4, 28, 28, 0.15);
     --theme-font-sans: var(--font-space-grotesk), system-ui, -apple-system, "Segoe UI", sans-serif;

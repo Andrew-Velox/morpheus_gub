@@ -48,7 +48,7 @@ export default function Page() {
 
           <SimulationHud
             isNightMode={isNightMode}
-            onToggle={() => setIsNightMode((p) => !p)}
+            onToggle={setIsNightMode}
           />
 
           <div className="flex-1">
