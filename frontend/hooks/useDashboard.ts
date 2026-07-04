@@ -16,8 +16,13 @@ export interface RoomPowers {
   workRoom2: number
 }
 
-const API_BASE = "http://localhost:4000"
-const WS_BASE = "ws://localhost:4000"
+// Backend URL: defaults to the deployed Render backend so Vercel works
+// out of the box. Override via NEXT_PUBLIC_API_BASE for local development
+// (e.g. "http://localhost:4000" in .env.local).
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "https://morpheus-gub.onrender.com"
+
+// Derive the WebSocket URL from the API base (http->ws, https->wss).
+const WS_BASE = API_BASE.replace(/^http/, "ws")
 
 const mapBackendRoomToFrontend = (roomId: string): "drawingRoom" | "workRoom1" | "workRoom2" => {
   if (roomId === "work_room_1") return "workRoom1"
