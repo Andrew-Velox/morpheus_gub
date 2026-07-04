@@ -22,10 +22,7 @@ function Tabs({
   )
 }
 
-function TabsList({
-  className,
-  ...props
-}: TabsPrimitive.List.Props) {
+function TabsList({ className, ...props }: TabsPrimitive.List.Props) {
   return (
     <TabsPrimitive.List
       data-slot="tabs-list"
@@ -43,7 +40,7 @@ function TabsTrigger({ className, ...props }: TabsPrimitive.Tab.Props) {
     <TabsPrimitive.Tab
       data-slot="tabs-trigger"
       className={cn(
-        "pb-2 text-xs tracking-[0.2em] uppercase text-midground/50 transition-colors hover:text-midground data-active:text-midground data-active:border-b data-active:border-midground disabled:pointer-events-none disabled:opacity-50",
+        "pb-2 text-xs tracking-[0.2em] text-midground/50 uppercase transition-colors hover:text-midground disabled:pointer-events-none disabled:opacity-50 data-active:border-b data-active:border-midground data-active:text-midground",
         className
       )}
       {...props}

@@ -5,7 +5,12 @@ import { Select as SelectPrimitive } from "@base-ui/react/select"
 
 import { cn } from "@/lib/utils"
 import { HugeiconsIcon } from "@hugeicons/react"
-import { UnfoldMoreIcon, Tick02Icon, ArrowUp01Icon, ArrowDown01Icon } from "@hugeicons/core-free-icons"
+import {
+  UnfoldMoreIcon,
+  Tick02Icon,
+  ArrowUp01Icon,
+  ArrowDown01Icon,
+} from "@hugeicons/core-free-icons"
 
 const Select = SelectPrimitive.Root
 
@@ -42,7 +47,7 @@ function SelectTrigger({
       data-slot="select-trigger"
       data-size={size}
       className={cn(
-        "flex w-fit items-center justify-between gap-1.5 border border-midground/15 bg-background/40 px-3 py-1 font-courier text-sm transition-colors outline-none focus-visible:ring-1 focus-visible:ring-midground/30 focus-visible:border-midground/25 disabled:cursor-not-allowed disabled:opacity-50 data-placeholder:text-midground/50 data-[size=default]:h-9 data-[size=sm]:h-8 *:data-[slot=select-value]:line-clamp-1 *:data-[slot=select-value]:flex *:data-[slot=select-value]:items-center *:data-[slot=select-value]:gap-1.5 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+        "font-courier flex w-fit items-center justify-between gap-1.5 border border-midground/15 bg-background/40 px-3 py-1 text-sm transition-colors outline-none focus-visible:border-midground/25 focus-visible:ring-1 focus-visible:ring-midground/30 disabled:cursor-not-allowed disabled:opacity-50 data-placeholder:text-midground/50 data-[size=default]:h-9 data-[size=sm]:h-8 *:data-[slot=select-value]:line-clamp-1 *:data-[slot=select-value]:flex *:data-[slot=select-value]:items-center *:data-[slot=select-value]:gap-1.5 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
         className
       )}
       {...props}
@@ -50,7 +55,11 @@ function SelectTrigger({
       {children}
       <SelectPrimitive.Icon
         render={
-          <HugeiconsIcon icon={UnfoldMoreIcon} strokeWidth={2} className="pointer-events-none size-4 text-midground/50" />
+          <HugeiconsIcon
+            icon={UnfoldMoreIcon}
+            strokeWidth={2}
+            className="pointer-events-none size-4 text-midground/50"
+          />
         }
       />
     </SelectPrimitive.Trigger>
@@ -106,7 +115,10 @@ function SelectLabel({
   return (
     <SelectPrimitive.GroupLabel
       data-slot="select-label"
-      className={cn("px-3 py-1.5 text-xs tracking-[0.1em] uppercase text-midground/50", className)}
+      className={cn(
+        "px-3 py-1.5 text-xs tracking-[0.1em] text-midground/50 uppercase",
+        className
+      )}
       {...props}
     />
   )
@@ -121,7 +133,7 @@ function SelectItem({
     <SelectPrimitive.Item
       data-slot="select-item"
       className={cn(
-        "relative flex w-full cursor-default items-center gap-2 py-1.5 pr-8 pl-3 text-xs tracking-[0.1em] text-midground/70 outline-none select-none transition-colors data-highlighted:bg-midground/10 data-highlighted:text-midground data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 *:[span]:last:flex *:[span]:last:items-center *:[span]:last:gap-2",
+        "relative flex w-full cursor-default items-center gap-2 py-1.5 pr-8 pl-3 text-xs tracking-[0.1em] text-midground/70 transition-colors outline-none select-none data-highlighted:bg-midground/10 data-highlighted:text-midground data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 *:[span]:last:flex *:[span]:last:items-center *:[span]:last:gap-2",
         className
       )}
       {...props}
@@ -134,7 +146,11 @@ function SelectItem({
           <span className="pointer-events-none absolute right-2 flex size-4 items-center justify-center" />
         }
       >
-        <HugeiconsIcon icon={Tick02Icon} strokeWidth={2} className="pointer-events-none text-midground" />
+        <HugeiconsIcon
+          icon={Tick02Icon}
+          strokeWidth={2}
+          className="pointer-events-none text-midground"
+        />
       </SelectPrimitive.ItemIndicator>
     </SelectPrimitive.Item>
   )
@@ -147,7 +163,10 @@ function SelectSeparator({
   return (
     <SelectPrimitive.Separator
       data-slot="select-separator"
-      className={cn("pointer-events-none -mx-1 my-1 h-px bg-midground/10", className)}
+      className={cn(
+        "pointer-events-none -mx-1 my-1 h-px bg-midground/10",
+        className
+      )}
       {...props}
     />
   )

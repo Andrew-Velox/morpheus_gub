@@ -48,7 +48,7 @@ function AlertDialogContent({
       <AlertDialogPrimitive.Popup
         data-slot="alert-dialog-content"
         className={cn(
-          "fixed top-1/2 left-1/2 z-50 w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 max-w-md border border-midground/15 bg-background-base text-foreground shadow-lg outline-none duration-150 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95",
+          "fixed top-1/2 left-1/2 z-50 w-[calc(100%-2rem)] max-w-md -translate-x-1/2 -translate-y-1/2 border border-midground/15 bg-background-base text-foreground shadow-lg duration-150 outline-none data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95",
           className
         )}
         {...props}
@@ -65,7 +65,7 @@ function AlertDialogHeader({
     <div
       data-slot="alert-dialog-header"
       className={cn(
-        "flex items-start gap-3 p-4 border-b border-midground/15",
+        "flex items-start gap-3 border-b border-midground/15 p-4",
         className
       )}
       {...props}
@@ -80,10 +80,7 @@ function AlertDialogFooter({
   return (
     <div
       data-slot="alert-dialog-footer"
-      className={cn(
-        "flex items-center justify-end gap-2 p-3",
-        className
-      )}
+      className={cn("flex items-center justify-end gap-2 p-3", className)}
       {...props}
     />
   )
@@ -96,10 +93,7 @@ function AlertDialogTitle({
   return (
     <AlertDialogPrimitive.Title
       data-slot="alert-dialog-title"
-      className={cn(
-        "text-sm font-bold tracking-[0.08em] uppercase",
-        className
-      )}
+      className={cn("text-sm font-bold tracking-[0.08em] uppercase", className)}
       {...props}
     />
   )
@@ -112,10 +106,7 @@ function AlertDialogDescription({
   return (
     <AlertDialogPrimitive.Description
       data-slot="alert-dialog-description"
-      className={cn(
-        "text-xs text-midground/60 leading-relaxed",
-        className
-      )}
+      className={cn("text-xs leading-relaxed text-midground/60", className)}
       {...props}
     />
   )

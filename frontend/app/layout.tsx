@@ -30,7 +30,7 @@ export default function RootLayout({
         spaceGrotesk.variable
       )}
     >
-      <body>
+      <body className="h-dvh overflow-hidden">
         <ThemeProvider>{children}</ThemeProvider>
       </body>
     </html>

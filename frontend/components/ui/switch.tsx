@@ -19,12 +19,12 @@ function Switch({
     <button
       aria-checked={checked}
       className={cn(
-        "peer inline-flex h-5 w-9 shrink-0 items-center border transition-colors cursor-pointer",
-        "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-midground/30",
+        "peer inline-flex h-5 w-9 shrink-0 cursor-pointer items-center border transition-colors",
+        "focus-visible:ring-1 focus-visible:ring-midground/30 focus-visible:outline-none",
         "disabled:cursor-not-allowed disabled:opacity-50",
         checked
-          ? "bg-midground/15 border-midground/30"
-          : "bg-background border-midground/20",
+          ? "border-midground/30 bg-midground/15"
+          : "border-midground/20 bg-background",
         className
       )}
       disabled={disabled}
