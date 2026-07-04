@@ -38,6 +38,38 @@ import {
   DialogClose,
 } from "@/components/ui/dialog"
 import { Switch } from "@/components/ui/switch"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Checkbox } from "@/components/ui/checkbox"
+import { Separator } from "@/components/ui/separator"
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select"
+import {
+  Tabs,
+  TabsList,
+  TabsTrigger,
+  TabsContent,
+} from "@/components/ui/tabs"
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuGroup,
+} from "@/components/ui/dropdown-menu"
+import {
+  Progress,
+  ProgressLabel,
+  ProgressValue,
+} from "@/components/ui/progress"
+import { TierCard } from "@/components/ui/tier-card"
 
 export default function Page() {
   const [switch1, setSwitch1] = useState(true)
@@ -218,6 +250,137 @@ export default function Page() {
               Something went wrong. Try again.
             </AlertDescription>
           </Alert>
+        </div>
+      </section>
+
+      <section className="flex flex-col gap-4">
+        <h2 className="text-display text-sm text-muted-foreground">Input & Label</h2>
+        <div className="flex max-w-xs flex-col gap-3">
+          <Label htmlFor="name">Name</Label>
+          <Input id="name" placeholder="Enter your name" />
+          <Label htmlFor="email">Email</Label>
+          <Input id="email" type="email" placeholder="you@example.com" />
+          <Label htmlFor="disabled">Disabled</Label>
+          <Input id="disabled" placeholder="Disabled input" disabled />
+        </div>
+      </section>
+
+      <section className="flex flex-col gap-4">
+        <h2 className="text-display text-sm text-muted-foreground">Checkbox</h2>
+        <div className="flex flex-col gap-2">
+          <label className="flex items-center gap-2">
+            <Checkbox defaultChecked />
+            <span className="text-xs tracking-[0.1em] text-midground/70">Enable notifications</span>
+          </label>
+          <label className="flex items-center gap-2">
+            <Checkbox />
+            <span className="text-xs tracking-[0.1em] text-midground/70">Dark mode</span>
+          </label>
+          <label className="flex items-center gap-2">
+            <Checkbox disabled />
+            <span className="text-xs tracking-[0.1em] text-midground/50">Disabled option</span>
+          </label>
+        </div>
+      </section>
+
+      <section className="flex flex-col gap-4">
+        <h2 className="text-display text-sm text-muted-foreground">Separator</h2>
+        <div className="flex items-center gap-3">
+          <span className="text-xs text-midground/60">Section A</span>
+          <Separator orientation="vertical" className="h-4" />
+          <span className="text-xs text-midground/60">Section B</span>
+          <Separator orientation="vertical" className="h-4" />
+          <span className="text-xs text-midground/60">Section C</span>
+        </div>
+      </section>
+
+      <section className="flex flex-col gap-4">
+        <h2 className="text-display text-sm text-muted-foreground">Select</h2>
+        <div className="flex max-w-xs flex-col gap-3">
+          <Label>Theme</Label>
+          <Select defaultValue="dark">
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="light">Light</SelectItem>
+              <SelectItem value="dark">Dark</SelectItem>
+              <SelectItem value="system">System</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </section>
+
+      <section className="flex flex-col gap-4">
+        <h2 className="text-display text-sm text-muted-foreground">Tabs</h2>
+        <Tabs defaultValue="tab1">
+          <TabsList>
+            <TabsTrigger value="tab1">General</TabsTrigger>
+            <TabsTrigger value="tab2">Advanced</TabsTrigger>
+            <TabsTrigger value="tab3">About</TabsTrigger>
+          </TabsList>
+          <TabsContent value="tab1" className="pt-4">
+            <p className="text-sm text-midground/70">General settings content.</p>
+          </TabsContent>
+          <TabsContent value="tab2" className="pt-4">
+            <p className="text-sm text-midground/70">Advanced settings content.</p>
+          </TabsContent>
+          <TabsContent value="tab3" className="pt-4">
+            <p className="text-sm text-midground/70">Version 1.0.0</p>
+          </TabsContent>
+        </Tabs>
+      </section>
+
+      <section className="flex flex-col gap-4">
+        <h2 className="text-display text-sm text-muted-foreground">Dropdown Menu</h2>
+        <DropdownMenu>
+          <DropdownMenuTrigger render={<Button variant="outline">Menu</Button>} />
+          <DropdownMenuContent>
+            <DropdownMenuGroup>
+              <DropdownMenuLabel>Account</DropdownMenuLabel>
+              <DropdownMenuItem>Profile</DropdownMenuItem>
+              <DropdownMenuItem>Settings</DropdownMenuItem>
+            </DropdownMenuGroup>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem>Log out</DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </section>
+
+      <section className="flex flex-col gap-4">
+        <h2 className="text-display text-sm text-muted-foreground">Progress</h2>
+        <div className="flex max-w-xs flex-col gap-2">
+          <Progress value={60}>
+            <ProgressLabel>Loading</ProgressLabel>
+            <ProgressValue>{(value) => `${value}%`}</ProgressValue>
+          </Progress>
+          <Progress value={100}>
+            <ProgressLabel>Complete</ProgressLabel>
+            <ProgressValue>{(value) => `${value}%`}</ProgressValue>
+          </Progress>
+        </div>
+      </section>
+
+      <section className="flex flex-col gap-4">
+        <h2 className="text-display text-sm text-muted-foreground">Tier Card</h2>
+        <div className="flex flex-wrap gap-4">
+          <TierCard
+            className="max-w-xs"
+            name="Starter"
+            price="Free"
+            description="For personal use"
+            features={["Up to 3 projects", "Basic analytics", "Community support"]}
+            ctaText="Get Started"
+          />
+          <TierCard
+            className="max-w-xs"
+            name="Pro"
+            price="$29/mo"
+            description="For professionals"
+            features={["Unlimited projects", "Advanced analytics", "Priority support", "API access"]}
+            ctaText="Subscribe"
+            highlighted
+          />
         </div>
       </section>
 
