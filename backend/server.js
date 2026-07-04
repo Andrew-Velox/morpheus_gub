@@ -10,7 +10,7 @@ import apiRouter from './routes/api.js';
 import openapiSpec from './config/swagger.js';
 import { buildSnapshot, startSimulation } from './simulation/engine.js';
 import { getStoreMetadata } from './data/deviceStore.js';
-import { CORS_ORIGIN, PORT, ROOMS } from './config/constants.js';
+import { CORS_ORIGIN, PORT, ROOMS, SIMULATION_ENABLED } from './config/constants.js';
 import { attachWebSocket } from './utils/websocket.js';
 
 dotenv.config();
@@ -40,11 +40,14 @@ app.use((err, req, res, next) => {
   res.status(statusCode).json({ error: message });
 });
 
-startSimulation();
+if (SIMULATION_ENABLED) {
+  startSimulation();
+}
 
 const server = app.listen(PORT, () => {
   console.log(`office backend running at http://localhost:${PORT}`);
   console.log(`rooms: ${ROOMS.join(', ')} | devices: ${getStoreMetadata().device_count}`);
+  console.log(`simulation: ${SIMULATION_ENABLED ? 'enabled' : 'disabled'}`);
   console.log('realtime: SSE /api/stream + WebSocket /ws');
 });
 

@@ -3,11 +3,13 @@
   "type": "module",
   "version": "1.0.0",
   "scripts": {
-"start": "node server.js",
-  "start:server": "node server.js",
-  "start:bot": "node bot.js",
-  "dev": "node dev.mjs",
-  "test": "node testBackend.js"
+    "start": "node server.js",
+    "start:server": "node server.js",
+    "start:bot": "node bot.js",
+    "dev": "node dev.mjs",
+    "test": "npm run test:smoke && npm run test:judge",
+    "test:smoke": "node testBackend.js",
+    "test:judge": "node testJudgeHardening.js"
   },
   "dependencies": {
     "cors": "^2.8.6",
@@ -20,5 +22,8 @@
   },
   "devDependencies": {
     "concurrently": "^10.0.3"
+  },
+  "overrides": {
+    "undici": "6.27.0"
   }
 }

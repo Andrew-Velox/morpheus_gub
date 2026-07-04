@@ -29,7 +29,8 @@ export const KWH_FACTOR = 3.6e9;
 export const OVER_USAGE_MS = 2 * 60 * 60 * 1000;
 
 // Simulation cadence: every 10 seconds toggle 1-2 random devices.
-export const SIM_INTERVAL_MS = 10 * 1000;
+export const SIM_INTERVAL_MS = Number(process.env.SIM_INTERVAL_MS || 10 * 1000);
+export const SIMULATION_ENABLED = process.env.SIMULATION_ENABLED !== 'false';
 
 // Rooms tracked by the system + a short slug for device ids / URL params.
 export const ROOMS = ['Drawing Room', 'Work Room 1', 'Work Room 2'];
