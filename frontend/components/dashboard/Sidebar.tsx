@@ -5,6 +5,7 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
+import { useDashboard } from "@/context/DashboardContext"
 
 interface SidebarProps {
   collapsed?: boolean
@@ -17,12 +18,16 @@ function Sidebar({
 }: SidebarProps) {
   const pathname = usePathname()
   const activeTab = pathname === "/floorplan" ? "floorplan" : "grid"
+  const { diagnostics } = useDashboard()
 
   return (
     <aside
       className={cn(
-        "group/sidebar relative flex shrink-0 flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground transition-all duration-200 select-none",
-        collapsed ? "w-16" : "w-64"
+        "group/sidebar flex shrink-0 flex-col border-sidebar-border bg-sidebar text-sidebar-foreground transition-all duration-200 select-none",
+        "fixed inset-y-0 left-0 z-50 h-full border-r shadow-2xl md:relative md:flex md:shadow-none",
+        collapsed
+          ? "w-16 -translate-x-full md:translate-x-0"
+          : "w-64 translate-x-0"
       )}
     >
       {/* Brand Header */}
@@ -141,19 +146,23 @@ function Sidebar({
             <div className="flex flex-col gap-1.5 text-[10px] leading-relaxed text-sidebar-foreground/75">
               <div className="flex justify-between">
                 <span>DISCORD_BOT:</span>
-                <span className="font-semibold text-success">ONLINE</span>
+                <span className={cn("font-semibold", diagnostics.discordBot === "ONLINE" ? "text-success" : "text-destructive")}>
+                  {diagnostics.discordBot}
+                </span>
               </div>
               <div className="flex justify-between">
                 <span>DATABASE:</span>
-                <span className="text-sidebar-foreground/45">LOCAL_IN_MEM</span>
+                <span className="text-sidebar-foreground/45">{diagnostics.database}</span>
               </div>
               <div className="flex justify-between">
                 <span>API_GATEWAY:</span>
-                <span className="font-semibold text-success">OK</span>
+                <span className={cn("font-semibold", diagnostics.apiGateway === "OK" ? "text-success" : "text-destructive")}>
+                  {diagnostics.apiGateway}
+                </span>
               </div>
               <div className="flex justify-between">
                 <span>LATENCY:</span>
-                <span className="font-semibold text-success">2ms</span>
+                <span className="font-semibold text-success">{diagnostics.latency}</span>
               </div>
             </div>
           </div>
@@ -165,19 +174,23 @@ function Sidebar({
             <div className="flex flex-col gap-1.5 text-[10px] leading-relaxed text-sidebar-foreground/60">
               <div className="flex justify-between">
                 <span>DISCORD_BOT:</span>
-                <span className="font-semibold text-success">ONLINE</span>
+                <span className={cn("font-semibold", diagnostics.discordBot === "ONLINE" ? "text-success" : "text-destructive")}>
+                  {diagnostics.discordBot}
+                </span>
               </div>
               <div className="flex justify-between">
                 <span>DATABASE:</span>
-                <span className="text-sidebar-foreground/40">LOCAL_IN_MEM</span>
+                <span className="text-sidebar-foreground/40">{diagnostics.database}</span>
               </div>
               <div className="flex justify-between">
                 <span>API_GATEWAY:</span>
-                <span className="font-semibold text-success">OK</span>
+                <span className={cn("font-semibold", diagnostics.apiGateway === "OK" ? "text-success" : "text-destructive")}>
+                  {diagnostics.apiGateway}
+                </span>
               </div>
               <div className="flex justify-between">
                 <span>LATENCY:</span>
-                <span className="font-semibold text-success">2ms</span>
+                <span className="font-semibold text-success">{diagnostics.latency}</span>
               </div>
             </div>
           </div>

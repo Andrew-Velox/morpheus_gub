@@ -9,7 +9,7 @@ export interface Device {
 
 export const initialDevices: Device[] = [
   {
-    id: "dr-fan-1",
+    id: "draw_fan_1",
     name: "Fan 1",
     type: "fan",
     room: "drawingRoom",
@@ -17,7 +17,7 @@ export const initialDevices: Device[] = [
     wattage: 60,
   },
   {
-    id: "dr-fan-2",
+    id: "draw_fan_2",
     name: "Fan 2",
     type: "fan",
     room: "drawingRoom",
@@ -25,7 +25,7 @@ export const initialDevices: Device[] = [
     wattage: 60,
   },
   {
-    id: "dr-light-1",
+    id: "draw_light_1",
     name: "Light 1",
     type: "light",
     room: "drawingRoom",
@@ -33,7 +33,7 @@ export const initialDevices: Device[] = [
     wattage: 15,
   },
   {
-    id: "dr-light-2",
+    id: "draw_light_2",
     name: "Light 2",
     type: "light",
     room: "drawingRoom",
@@ -41,7 +41,7 @@ export const initialDevices: Device[] = [
     wattage: 15,
   },
   {
-    id: "dr-light-3",
+    id: "draw_light_3",
     name: "Light 3",
     type: "light",
     room: "drawingRoom",
@@ -49,7 +49,7 @@ export const initialDevices: Device[] = [
     wattage: 15,
   },
   {
-    id: "wr1-fan-1",
+    id: "work1_fan_1",
     name: "Fan 1",
     type: "fan",
     room: "workRoom1",
@@ -57,7 +57,7 @@ export const initialDevices: Device[] = [
     wattage: 60,
   },
   {
-    id: "wr1-fan-2",
+    id: "work1_fan_2",
     name: "Fan 2",
     type: "fan",
     room: "workRoom1",
@@ -65,7 +65,7 @@ export const initialDevices: Device[] = [
     wattage: 60,
   },
   {
-    id: "wr1-light-1",
+    id: "work1_light_1",
     name: "Light 1",
     type: "light",
     room: "workRoom1",
@@ -73,7 +73,7 @@ export const initialDevices: Device[] = [
     wattage: 15,
   },
   {
-    id: "wr1-light-2",
+    id: "work1_light_2",
     name: "Light 2",
     type: "light",
     room: "workRoom1",
@@ -81,7 +81,7 @@ export const initialDevices: Device[] = [
     wattage: 15,
   },
   {
-    id: "wr1-light-3",
+    id: "work1_light_3",
     name: "Light 3",
     type: "light",
     room: "workRoom1",
@@ -89,7 +89,7 @@ export const initialDevices: Device[] = [
     wattage: 15,
   },
   {
-    id: "wr2-fan-1",
+    id: "work2_fan_1",
     name: "Fan 1",
     type: "fan",
     room: "workRoom2",
@@ -97,7 +97,7 @@ export const initialDevices: Device[] = [
     wattage: 60,
   },
   {
-    id: "wr2-fan-2",
+    id: "work2_fan_2",
     name: "Fan 2",
     type: "fan",
     room: "workRoom2",
@@ -105,7 +105,7 @@ export const initialDevices: Device[] = [
     wattage: 60,
   },
   {
-    id: "wr2-light-1",
+    id: "work2_light_1",
     name: "Light 1",
     type: "light",
     room: "workRoom2",
@@ -113,7 +113,7 @@ export const initialDevices: Device[] = [
     wattage: 15,
   },
   {
-    id: "wr2-light-2",
+    id: "work2_light_2",
     name: "Light 2",
     type: "light",
     room: "workRoom2",
@@ -121,7 +121,7 @@ export const initialDevices: Device[] = [
     wattage: 15,
   },
   {
-    id: "wr2-light-3",
+    id: "work2_light_3",
     name: "Light 3",
     type: "light",
     room: "workRoom2",

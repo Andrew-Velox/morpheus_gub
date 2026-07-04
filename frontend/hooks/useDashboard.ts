@@ -42,6 +42,17 @@ export function useDashboard() {
     tariffRate: number
   }>({ totalKwh: 0, estimatedCostBdt: 0, tariffRate: 12 })
   const [powerHistory, setPowerHistory] = useState<{ time: string; value: number }[]>([])
+  const [diagnostics, setDiagnostics] = useState<{
+    discordBot: string
+    database: string
+    apiGateway: string
+    latency: string
+  }>({
+    discordBot: "CONNECTING...",
+    database: "LOCAL_IN_MEM",
+    apiGateway: "CONNECTING...",
+    latency: "..."
+  })
 
   const handleDeviceToggle = useCallback(async (id: string) => {
     // Optimistic update
@@ -202,6 +213,56 @@ export function useDashboard() {
     }
   }, [])
 
+  // Poll /api/health to check server diagnostics
+  useEffect(() => {
+    let active = true
+    let timer: NodeJS.Timeout
+
+    const fetchHealth = async () => {
+      const startTime = performance.now()
+      try {
+        const res = await fetch(`${API_BASE}/api/health`)
+        const endTime = performance.now()
+        const lat = Math.round(endTime - startTime)
+        
+        if (!active) return
+
+        if (res.ok) {
+          const data = await res.json()
+          setDiagnostics({
+            discordBot: data.realtime ? "ONLINE" : "OFFLINE",
+            database: "LOCAL_IN_MEM",
+            apiGateway: data.status === "ok" ? "OK" : "ERROR",
+            latency: `${lat}ms`,
+          })
+        } else {
+          setDiagnostics((prev) => ({
+            ...prev,
+            discordBot: "OFFLINE",
+            apiGateway: "ERROR",
+            latency: "N/A",
+          }))
+        }
+      } catch (err) {
+        if (!active) return
+        setDiagnostics({
+          discordBot: "OFFLINE",
+          database: "OFFLINE",
+          apiGateway: "OFFLINE",
+          latency: "N/A",
+        })
+      }
+    }
+
+    fetchHealth()
+    timer = setInterval(fetchHealth, 10000)
+
+    return () => {
+      active = false
+      clearInterval(timer)
+    }
+  }, [])
+
   const handleToggleNightMode = useCallback(async () => {
     const nextIsNight = !isNightMode
     const targetHour = nextIsNight ? 21 : 14
@@ -252,5 +313,6 @@ export function useDashboard() {
     alerts,
     usage,
     powerHistory,
+    diagnostics,
   }
 }

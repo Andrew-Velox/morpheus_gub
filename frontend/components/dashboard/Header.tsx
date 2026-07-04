@@ -5,7 +5,12 @@ import { useTheme } from "next-themes"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { Alert02Icon } from "@hugeicons/core-free-icons"
 
-function Header({ activeAlertsCount = 2 }: { activeAlertsCount?: number }) {
+interface HeaderProps {
+  activeAlertsCount?: number
+  onToggleSidebar?: () => void
+}
+
+function Header({ activeAlertsCount = 2, onToggleSidebar }: HeaderProps) {
   const [time, setTime] = useState("")
   const [mounted, setMounted] = useState(false)
   const { resolvedTheme, setTheme } = useTheme()
@@ -29,40 +34,78 @@ function Header({ activeAlertsCount = 2 }: { activeAlertsCount?: number }) {
   }, [])
 
   return (
-    <header className="flex h-14 items-center justify-between border-b border-border bg-card/40 px-6 font-mono text-xs tracking-wider">
+    <header className="flex h-14 items-center justify-between border-b border-border bg-card/40 px-4 md:px-6 font-mono text-xs tracking-wider">
       {/* Brand Title */}
       <div className="flex items-center gap-3">
-        <div className="size-2.5 animate-pulse bg-primary" />
-        <span className="text-sm font-semibold tracking-[0.15em] text-foreground uppercase">
-          MORPHEUS // ENERGY_COMMAND
-        </span>
+        {onToggleSidebar && (
+          <button
+            onClick={onToggleSidebar}
+            className="flex size-7 items-center justify-center border border-border bg-background/50 text-muted-foreground hover:text-foreground cursor-pointer md:hidden"
+            title="Toggle Menu"
+          >
+            <svg className="size-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </button>
+        )}
+        {/* Animated Hexagonal Grid Core */}
+        <div className="relative flex size-6 items-center justify-center">
+          <svg
+            className="absolute size-6 animate-spin text-primary/40"
+            style={{ animationDuration: "12s" }}
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.5"
+          >
+            <polygon points="12 2 22 8.5 22 20 12 22 2 20 2 8.5" />
+          </svg>
+          <svg
+            className="absolute size-4 animate-spin text-primary"
+            style={{ animationDuration: "6s", animationDirection: "reverse" }}
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+          >
+            <polygon points="12 5 18 8.5 18 15.5 12 19 6 15.5 6 8.5" />
+          </svg>
+          <div className="size-1.5 rounded-full bg-primary shadow-[0_0_8px_var(--primary)]" />
+        </div>
+
+        {/* Text Group */}
+        <div className="flex items-baseline gap-2 font-mono">
+          <span className="bg-gradient-to-r from-primary via-cyan-400 to-emerald-400 bg-clip-text text-sm font-extrabold tracking-[0.2em] text-transparent uppercase">
+            MORPHEUS
+          </span>
+        </div>
       </div>
       
       {/* Stats and Info Bar */}
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-2 md:gap-4">
         {/* Mock Live Connection Status */}
-        <div className="flex items-center gap-2 border border-border bg-background/50 px-2.5 py-1 text-success">
+        <div className="flex items-center gap-2 border border-border bg-background/50 px-2 py-1 md:px-2.5 text-success">
           <span className="relative flex size-2">
             <span className="absolute inline-flex h-full w-full animate-ping bg-success opacity-75"></span>
             <span className="relative inline-flex size-2 bg-success"></span>
           </span>
           <span className="text-[10px] font-bold tracking-widest uppercase">
-            SIM_FEED: CONNECTED
+            <span className="hidden sm:inline">SIM_FEED: </span>CONNECTED
           </span>
         </div>
 
         {/* Mock Active Alerts Count */}
-        <div className="flex items-center gap-2 border border-destructive/20 bg-destructive/5 px-2.5 py-1 text-destructive">
+        <div className="flex items-center gap-2 border border-destructive/20 bg-destructive/5 px-2 py-1 md:px-2.5 text-destructive">
           <HugeiconsIcon icon={Alert02Icon} className="size-3.5" />
           <span className="text-[10px] font-bold tracking-widest uppercase">
-            ALERTS: {activeAlertsCount} ACTIVE
+            <span className="hidden sm:inline">ALERTS: </span>{activeAlertsCount} <span className="hidden sm:inline">ACTIVE</span>
           </span>
         </div>
 
         {/* Live Mock Server Clock */}
-        <div className="flex items-center gap-2 border border-border bg-background/50 px-2.5 py-1 text-muted-foreground">
+        <div className="flex items-center gap-2 border border-border bg-background/50 px-2 py-1 md:px-2.5 text-muted-foreground">
           <span className="text-[10px] font-bold tracking-widest uppercase">
-            BST_TIME: {time || "00:00:00"}
+            <span className="hidden md:inline">BST_TIME: </span>{time || "00:00:00"}
           </span>
         </div>
 

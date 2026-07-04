@@ -3,6 +3,7 @@ import { Geist_Mono, Space_Grotesk } from "next/font/google"
 import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
 import { DashboardProvider } from "@/context/DashboardContext"
+import { Toaster } from "@/components/ui/sonner"
 import { cn } from "@/lib/utils"
 
 const spaceGrotesk = Space_Grotesk({
@@ -35,9 +36,11 @@ export default function RootLayout({
         <ThemeProvider>
           <DashboardProvider>
             {children}
+            <Toaster />
           </DashboardProvider>
         </ThemeProvider>
       </body>
     </html>
   )
 }
+

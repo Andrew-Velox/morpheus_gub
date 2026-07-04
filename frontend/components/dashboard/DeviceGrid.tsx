@@ -131,14 +131,85 @@ function DeviceGrid({ devices, onDeviceToggle }: DeviceGridProps) {
     </Card>
   )
 
+  const activeAll = devices.filter((d) => d.checked).length
+  const totalAll = devices.length
+
+  const activeDr = rooms.drawingRoom.devices.filter((d) => d.checked).length
+  const totalDr = rooms.drawingRoom.devices.length
+
+  const activeWr1 = rooms.workRoom1.devices.filter((d) => d.checked).length
+  const totalWr1 = rooms.workRoom1.devices.length
+
+  const activeWr2 = rooms.workRoom2.devices.filter((d) => d.checked).length
+  const totalWr2 = rooms.workRoom2.devices.length
+
   return (
     <div className="flex w-full flex-col gap-4 font-mono">
       <Tabs defaultValue="all" className="w-full">
-        <TabsList className="mb-4">
-          <TabsTrigger value="all">ALL ROOMS</TabsTrigger>
-          <TabsTrigger value="drawingRoom">DRAWING ROOM</TabsTrigger>
-          <TabsTrigger value="workRoom1">WORK ROOM 1</TabsTrigger>
-          <TabsTrigger value="workRoom2">WORK ROOM 2</TabsTrigger>
+        <TabsList className="mb-6 flex flex-wrap gap-x-6 gap-y-2 border-b border-border/40 pb-0">
+          <TabsTrigger
+            value="all"
+            className="flex items-center gap-2 pb-3 text-[10px] font-bold tracking-[0.2em] uppercase transition-all data-active:border-b-2 data-active:border-primary data-active:text-primary hover:text-foreground cursor-pointer"
+          >
+            <span>All Rooms</span>
+            <span
+              className={`ml-1 px-1.5 py-0.5 text-[9px] font-bold border rounded-full transition-all ${
+                activeAll > 0
+                  ? "bg-primary/10 text-primary border-primary/30"
+                  : "bg-muted/10 text-muted-foreground border-border/40"
+              }`}
+            >
+              {activeAll}/{totalAll}
+            </span>
+          </TabsTrigger>
+
+          <TabsTrigger
+            value="drawingRoom"
+            className="flex items-center gap-2 pb-3 text-[10px] font-bold tracking-[0.2em] uppercase transition-all data-active:border-b-2 data-active:border-primary data-active:text-primary hover:text-foreground cursor-pointer"
+          >
+            <span>Drawing Room</span>
+            <span
+              className={`ml-1 px-1.5 py-0.5 text-[9px] font-bold border rounded-full transition-all ${
+                activeDr > 0
+                  ? "bg-primary/10 text-primary border-primary/30"
+                  : "bg-muted/10 text-muted-foreground border-border/40"
+              }`}
+            >
+              {activeDr}/{totalDr}
+            </span>
+          </TabsTrigger>
+
+          <TabsTrigger
+            value="workRoom1"
+            className="flex items-center gap-2 pb-3 text-[10px] font-bold tracking-[0.2em] uppercase transition-all data-active:border-b-2 data-active:border-primary data-active:text-primary hover:text-foreground cursor-pointer"
+          >
+            <span>Work Room 1</span>
+            <span
+              className={`ml-1 px-1.5 py-0.5 text-[9px] font-bold border rounded-full transition-all ${
+                activeWr1 > 0
+                  ? "bg-primary/10 text-primary border-primary/30"
+                  : "bg-muted/10 text-muted-foreground border-border/40"
+              }`}
+            >
+              {activeWr1}/{totalWr1}
+            </span>
+          </TabsTrigger>
+
+          <TabsTrigger
+            value="workRoom2"
+            className="flex items-center gap-2 pb-3 text-[10px] font-bold tracking-[0.2em] uppercase transition-all data-active:border-b-2 data-active:border-primary data-active:text-primary hover:text-foreground cursor-pointer"
+          >
+            <span>Work Room 2</span>
+            <span
+              className={`ml-1 px-1.5 py-0.5 text-[9px] font-bold border rounded-full transition-all ${
+                activeWr2 > 0
+                  ? "bg-primary/10 text-primary border-primary/30"
+                  : "bg-muted/10 text-muted-foreground border-border/40"
+              }`}
+            >
+              {activeWr2}/{totalWr2}
+            </span>
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="all" className="flex flex-col gap-6">
